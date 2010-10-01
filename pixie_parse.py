@@ -139,76 +139,125 @@ while os.path.exists(file_path + '.bin'):
     file_counter += 1
     file_path = (file_series + '%04d') % file_counter
     
-# Define new group within HDF5 for storing each spectra type
+# Define new groups within HDF5 for storing each spectra type for each detector
 spectra = h5file.createGroup(h5file.root, "spectra", "Spectra Arrays")
+gNormal = h5file.createGroup(h5file.root.spectra, "normal", "Normal Data")
+gCompton = h5file.createGroup(h5file.root.spectra, "compton", "Compton-Supp Data")
+gGGcoinc = h5file.createGroup(h5file.root.spectra, "ggcoinc", "Gamma-Gamma Data")
+
+gN1 = h5file.createGroup(h5file.root.spectra.normal, "det1", "Det 1 Normal Data")
+gN1_T = h5file.createGroup(h5file.root.spectra.normal.det1, "t_arrays", "Time array - Det 1")
+gN2 = h5file.createGroup(h5file.root.spectra.normal, "det2", "Det 2 Normal Data")
+gN2_T = h5file.createGroup(h5file.root.spectra.normal.det2, "t_arrays", "Time array - Det 2")
+
+gC1 = h5file.createGroup(h5file.root.spectra.compton, "det1", "Det 1 Compton-Supp Data")
+gC1_T = h5file.createGroup(h5file.root.spectra.compton.det1, "t_arrays", "Time array - Det 1")
+gC2 = h5file.createGroup(h5file.root.spectra.compton, "det2", "Det 2 Compton-Supp Data")
+gC2_T = h5file.createGroup(h5file.root.spectra.compton.det2, "t_arrays", "Time array - Det 2")
+
+gGG1 = h5file.createGroup(h5file.root.spectra.ggcoinc, "det1", "Det 1 Gamma-Gamma Data")
+gGG1_T = h5file.createGroup(h5file.root.spectra.ggcoinc.det1, "t_arrays", "Time array - Det 1")
+gGG2 = h5file.createGroup(h5file.root.spectra.ggcoinc, "det2", "Det 2 Gamma-Gamma Data")
+gGG2_T = h5file.createGroup(h5file.root.spectra.ggcoinc.det2, "t_arrays", "Time array - Det 2")
 
 ################################################################################
-# Store Det-1 arrays containing normal counts###################################
+# Store Det-1 & 2 arrays containing normal counts###############################
 ################################################################################
-norm_evts_1 = [[row['energy_1'],row['timestamp']] for row in table.where("""(energy_1 != -1)""") ]
+
+norm_evts = [[row['energy_1'],row['energy_2'],row['timestamp']] for row in table.where("""(energy_1 != -1) | (energy_2 != -1""") ]
+h5file.createArray(gNormal, 'norm_evts12', np.array(norm_evts), "Normal Timestamped Events - Det 1")
+
+# Det 1
 
 spec_temp = np.zeros(energy_max + 1, dtype=np.int32)
-for x in norm_evts_1:
-    spec_temp[x[0]] +=1
-
-h5file.createArray(spectra, 'norm1_evts', np.array(norm_evts_1), "Normal Timestamped Events - Det 1")
-h5file.createArray(spectra, 'norm1_spec', spec_temp, "Normal Spec Array - Det 1")
-
-################################################################################
-# Store Det-2 arrays containing normal counts###################################
-################################################################################
-norm_evts_2 = [[row['energy_2'],row['timestamp']] for row in table.where("""(energy_2 != -1)""") ]
-
-spec_temp = np.zeros(energy_max + 1, dtype=np.int32)
-for x in norm_evts_2:
+for x in [row[0] for row in norm_evts if row[0] != -1]:
     spec_temp[x[0]] +=1
     
-h5file.createArray(spectra, 'norm2_evts', np.array(norm_evts_2), "Normal Timestamped Events - Det 2")
-h5file.createArray(spectra, 'norm2_spec', spec_temp, "Normal Spec Array - Det 2")
+h5file.createArray(gN1, 'norm1_spec', spec_temp, "Normal Spec Array - Det 1")
 
+for chn in range(energy_max + 1):
+    t_array_dump = np.array([i[2] for i in norm_evts if (int(i[0]) == chn)])
+    h5file.createArray(gN1_T, 'chan' + chn, t_array_dump)
+
+# Det 2
+
+spec_temp = np.zeros(energy_max + 1, dtype=np.int32)
+for x in [row[0] for row in norm_evts if row[0] != -1]:
+    spec_temp[x[0]] +=1
+    
+h5file.createArray(gN2, 'norm2_spec', spec_temp, "Normal Spec Array - Det 2")
+
+for chn in range(energy_max + 1):
+    t_array_dump = np.array([i[1] for i in norm_evts if (int(i[1]) == chn)])
+    h5file.createArray(gN2_T, 'chan' + chn, t_array_dump)
+    
 ################################################################################
 # Store Det-1 & 2 arrays containing Compton counts##############################
 ################################################################################
+
 compt_evts = [[row['energy_1'],row['energy_2'],row['timestamp']]
     for row in table.where("""(energy_0 == -1) & (energy_1 != -1) & (energy_2 == -1)""") ]
 compt_evts += [[row['energy_1'],row['energy_2'],row['timestamp']]
     for row in table.where("""(energy_0 == -1) & (energy_1 == -1) & (energy_2 != -1)""") ]
 
-h5file.createArray(spectra, 'compt12_evts', np.array(compt_evts), "Compton Timestamped Events - Det 1/2")
+h5file.createArray(gCompton, 'compt_evts12', np.array(compt_evts), "Compton-Supp Timestamped Events - Det 1/2")
+
+# Det 1
 
 spec_temp = np.zeros(energy_max + 1, dtype=np.int32)
 for x in [row[0] for row in compt_evts if row[0] != -1]:
     spec_temp[x] += 1
-    
-h5file.createArray(spectra, 'compt1_spec', spec_temp, "Compton Spec Array - Det 1")
+   
+h5file.createArray(gC1, 'compt1_spec', spec_temp, "Compton-Supp Spec Array - Det 1")
+
+for chn in range(energy_max + 1):
+    t_array_dump = np.array([i[2] for i in compt_evts if (int(i[0]) == chn)])
+    h5file.createArray(gC1_T, 'chan' + chn, t_array_dump)
+
+# Det 2
 
 spec_temp = np.zeros(energy_max + 1, dtype=np.int32)
 for x in [row[1] for row in compt_evts if row[1] != -1]:
     spec_temp[x] += 1
 
-h5file.createArray(spectra, 'compt2_spec', spec_temp, "Compton Spec Array - Det 2")
+h5file.createArray(gC2, 'compt2_spec', spec_temp, "Compton-Supp Spec Array - Det 2")
+
+for chn in range(energy_max + 1):
+    t_array_dump = np.array([i[2] for i in compt_evts if (int(i[1]) == chn)])
+    h5file.createArray(gC2_T, 'chan' + chn, t_array_dump)
 
 ################################################################################
 # Store Det 1 & 2 Gamma-Gamma arrays containg counts############################
 ################################################################################
+
 gg_evts = [[row['energy_1'],row['energy_2'],row['timestamp']]
     for row in table.where("""(energy_0 == -1) & (energy_1 != -1) & (energy_2 != -1) & (deltaT_12 < 90)""") ]
 
-h5file.createArray(spectra, 'gg_evts', np.array(gg_evts), "Gamma-Gamma Timestamped Events - Det 1/2")
+h5file.createArray(gGGcoinc, 'gg_evts', np.array(gg_evts), "Gamma-Gamma Timestamped Events - Det 1/2")
 
-# Spectrum array for Det 1
+# Det 1
+
 spec_temp = np.zeros(energy_max + 1, dtype=np.int32)
 for x in gg_evts:
-    spec_temp[x[0]] +=1
+    spec_temp[x[0]] += 1
 
-h5file.createArray(spectra, 'gg1_spec', np.array(spec_temp), "Gamma-Gamma Spec Array - Det 1")
+h5file.createArray(gGG1, 'gg1_spec', np.array(spec_temp), "Gamma-Gamma Spec Array - Det 1")
 
-# Spectrum array for Det 2
+for chn in range(energy_max + 1):
+    t_array_dump = np.array([i[2] for i in gg_evts if (int(i[0]) == chn)])
+    h5file.createArray(gGG1_T, 'chan' + chn, t_array_dump)
+
+# Det 2
+
 spec_temp = np.zeros(energy_max + 1, dtype=np.int32)
 for x in gg_evts:
-    spec_temp[x[1]] +=1
+    spec_temp[x[1]] += 1
     
-h5file.createArray(spectra, 'gg2_spec', np.array(spec_temp), "Gamma-Gamma Spec Array - Det 2")
+h5file.createArray(gGG2, 'gg2_spec', np.array(spec_temp), "Gamma-Gamma Spec Array - Det 2")
+
+for chn in range(energy_max + 1):
+    t_array_dump = np.array([i[2] for i in gg_evts if (int(i[1]) == chn)])
+    h5file.createArray(gGG2_T, 'chan' + chn, t_array_dump)
 
 # Specgram coincidence array for Det 1/2
 #x = [row[0] for row in f.root.spectra.gg_evts]
