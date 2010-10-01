@@ -8,15 +8,17 @@ import tables
 import scipy
 
 # ETS imports
-from enthought.traits.api import HasTraits, Instance, Str, Enum, Any, List, Array, Dict, Button, NO_COMPARE, Float
+from enthought.traits.api import HasTraits, Instance, Str, Enum, Any, List, Array, Dict, Button, NO_COMPARE, Float, \
+    File
+
 from enthought.traits.ui.api import View, Item, VGroup, HGroup, EnumEditor, TableEditor, TabularEditor
 from enthought.traits.ui.ui_editors.array_view_editor import ArrayViewEditor
 from enthought.traits.ui.menu import Action
+
 from enthought.chaco.api import Plot, ArrayPlotData
 from enthought.enable.api import Component, ComponentEditor, Window
 
-from enthought.chaco.tools.api import PanTool, ZoomTool, LegendTool, \
-         TraitsTool, DragZoom
+from enthought.chaco.tools.api import PanTool, ZoomTool, LegendTool, TraitsTool, DragZoom
 
 np = numpy
 tb = tables
@@ -25,7 +27,7 @@ class PyramdsView(HasTraits):
     plot = Instance(Plot)
 
     # Database info
-    filename = Str("Co60_92710-.h5")
+    filename = File
     datafile = Any()
     dfr      = Any()
 
@@ -45,10 +47,13 @@ class PyramdsView(HasTraits):
     end_time = Float
 
     traits_view = View(
-        Item('plot', editor=ComponentEditor(), show_label=False),
-        HGroup(
-            Item('start_time', format_str='%.2F',  label="Start Time"), 
-            Item('end_time', format_str='%.2F', label="End Time"), 
+        VGroup(
+            Item('filename', label="Data File"),
+            Item('plot', editor=ComponentEditor(), show_label=False),
+            HGroup(
+                Item('start_time', format_str='%.2F',  label="Start Time"), 
+                Item('end_time', format_str='%.2F', label="End Time"), 
+            ),
         ),
         width=500, 
         height=500, 
@@ -59,18 +64,36 @@ class PyramdsView(HasTraits):
     def draw_plot(self):
         pass
 
-    # Set default Values
+    #
+    # Set Trait Defaults
+    #
+
+    def _filename_default(self):
+        return ""
+
     def _datafile_default(self):
-        return tb.openFile(self.filename, "r")
+        if os.path.exists(self.filename):
+            return tb.openFile(self.filename, "r")
+        else:
+            return None
 
     def _dfr_default(self):
-        return self.datafile.root
+        if self.datafile == None:
+            return None
+        else:
+            return self.datafile.root
 
     def _chan_default(self):
-        return np.arange(len(self.dfr.spectra.norm1_spec))
+        if self.dfr == None:
+            return np.array([])
+        else:
+            return np.arange(len(self.dfr.spectra.norm1_spec))
 
     def _hist_default(self):
-        return self.dfr.spectra.norm1_spec.read()
+        if self.dfr == None:
+            return np.array([])
+        else:
+            return self.dfr.spectra.norm1_spec.read()
 
     def _peak_default(self):
         return np.array([])
@@ -95,7 +118,32 @@ class PyramdsView(HasTraits):
         return 0.0
 
     def _end_time_default(self):
-        return self.dfr.bin_data_parse.readout[-1]['timestamp'] - self.dfr.bin_data_parse.readout[0]['timestamp']
+        if self.dfr == None:
+            return 0.0
+        else:
+            return self.dfr.bin_data_parse.readout[-1]['timestamp'] - self.dfr.bin_data_parse.readout[0]['timestamp']
+
+    #
+    # Define Traits Changed
+    #
+
+    def _filename_changed(self, new):
+        # Close old hdf5 file
+        if self.datafile != None:
+            self.datafile.close()
+
+        # Load new hdf5 file
+        self.datafile = tb.openFile(self.filename, "r")
+        self.dfr = self.datafile.root
+
+        self.chan = np.arange(len(self.dfr.spectra.norm1_spec))
+        self.hist = self.dfr.spectra.norm1_spec.read()
+
+        self.start_time = 0.0
+        self.end_time = self.dfr.bin_data_parse.readout[-1]['timestamp'] - self.dfr.bin_data_parse.readout[0]['timestamp']
+
+        self.plot.plots['plot0'][0].index.set_data(self.chan)
+        self.plot.plots['plot0'][0].value.set_data(self.hist)
 
 if __name__ == "__main__":
     pv = PyramdsView()
