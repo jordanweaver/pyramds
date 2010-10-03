@@ -20,11 +20,13 @@ from enthought.enable.api import Component, ComponentEditor, Window
 
 from enthought.chaco.tools.api import PanTool, ZoomTool, LegendTool, TraitsTool, DragZoom
 
+from spectrum_plot_view import make_spectrum_plot
+
 np = numpy
 tb = tables
 
 class PyramdsView(HasTraits):
-    plot = Instance(Plot)
+    plot = Instance(Component)
 
     # Database info
     filename = File
@@ -124,19 +126,7 @@ class PyramdsView(HasTraits):
         return np.array([])
 
     def _plot_default(self):
-        # Add Data
-        plotdata = ArrayPlotData(x=self.chan, y=self.hist, y2=self.peak)
-        plot = Plot(plotdata)
-        plot.plot(("x", "y"), type="scatter", color="black")
-        plot.plot(("x", "y2"), type="scatter", color="red")
-
-        # Add nice zooming and Panning
-        plot.tools.append(PanTool(plot))
-        zoom = ZoomTool(plot, tool_mode="box", always_on=False)
-        plot.overlays.append(zoom)
-        dragzoom = DragZoom(plot, drag_button="right")
-        plot.tools.append(dragzoom)
-
+        plot = make_spectrum_plot(self.chan, self.hist, self.peak)
         return plot
 
     def _start_time_default(self):
@@ -172,16 +162,23 @@ class PyramdsView(HasTraits):
         self.start_time = 0.0
         self.end_time = self.dfr.bin_data_parse.readout[-1]['timestamp'] - self.dfr.bin_data_parse.readout[0]['timestamp']
 
-        self.plot.plots['plot0'][0].index.set_data(self.chan)
-        self.plot.plots['plot0'][0].value.set_data(self.hist)
+        plot = make_spectrum_plot(self.chan, self.hist, self.peak)
+        self.plot = plot
 
     def _detector_changed(self):
         self.load_histogram_data()
+        plot = make_spectrum_plot(self.chan, self.hist, self.peak)
+        self.plot = plot
 
     def _spectrum_changed(self):
         self.load_histogram_data()
+        plot = make_spectrum_plot(self.chan, self.hist, self.peak)
+        self.plot = plot
 
 if __name__ == "__main__":
     pv = PyramdsView()
     pv.configure_traits()
 #    pv.edit_traits()
+
+    # close the hdf5 file that is still open
+    pv.datafile.close()
