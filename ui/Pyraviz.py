@@ -11,7 +11,7 @@ import scipy
 from enthought.traits.api import HasTraits, Instance, Str, Enum, Any, List, Array, Dict, Button, NO_COMPARE, Float, \
     File, Directory
 
-from enthought.traits.ui.api import View, Item, VGroup, HGroup, EnumEditor, TableEditor, TabularEditor, spring
+from enthought.traits.ui.api import View, Item, Group, VGroup, HGroup, EnumEditor, TableEditor, TabularEditor, spring
 from enthought.traits.ui.ui_editors.array_view_editor import ArrayViewEditor
 from enthought.traits.ui.menu import Action
 
@@ -24,6 +24,8 @@ from spectrum_plot_view import make_spectrum_plot, save_plot
 
 np = numpy
 tb = tables
+
+size = (500, 500)
 
 class PyramdsView(HasTraits):
     plot = Instance(Component)
@@ -61,7 +63,7 @@ class PyramdsView(HasTraits):
     traits_view = View(
         VGroup(
             Item('filename', label="Data File"),
-            Item('plot', editor=ComponentEditor(), show_label=False),
+            Item('plot', editor=ComponentEditor(size=size), show_label=False), 
             HGroup(
                 Item('detector'), 
                 spring,
