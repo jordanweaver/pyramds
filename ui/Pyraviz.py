@@ -9,7 +9,7 @@ import scipy
 
 # ETS imports
 from enthought.traits.api import HasTraits, Instance, Str, Enum, Any, List, Array, Dict, Button, NO_COMPARE, Float, \
-    File
+    File, Directory
 
 from enthought.traits.ui.api import View, Item, VGroup, HGroup, EnumEditor, TableEditor, TabularEditor, spring
 from enthought.traits.ui.ui_editors.array_view_editor import ArrayViewEditor
@@ -20,7 +20,7 @@ from enthought.enable.api import Component, ComponentEditor, Window
 
 from enthought.chaco.tools.api import PanTool, ZoomTool, LegendTool, TraitsTool, DragZoom
 
-from spectrum_plot_view import make_spectrum_plot
+from spectrum_plot_view import make_spectrum_plot, save_plot
 
 np = numpy
 tb = tables
@@ -32,6 +32,12 @@ class PyramdsView(HasTraits):
     filename = File
     datafile = Any()
     dfr      = Any()
+
+    # Save Information
+    save_directory = Directory(".")
+    save_figure = Button(label="Save Figure")
+#    save_table = Button(label="Save Table")
+    
 
     # plot data
     chan = Array
@@ -47,10 +53,6 @@ class PyramdsView(HasTraits):
         "Compton":     "compt",
         "Gamma-Gamma": "gg",
         }
-
-#    save_directory = Str("vizfigs/")
-#    save_figure = Button(label="Save Figure")
-#    save_table = Button(label="Save Table")
 
     # UI Stuff
     start_time = Float
@@ -68,6 +70,11 @@ class PyramdsView(HasTraits):
                 Item('start_time', format_str='%.2F',  label="Start Time"),
                 spring,
                 Item('end_time', format_str='%.2F', label="End Time"), 
+            ),
+            HGroup(
+                Item('save_directory', width=400, label="Save Dir"),
+                spring,
+                Item('save_figure', show_label=False),
             ),
         ),
         width=500, 
@@ -175,10 +182,20 @@ class PyramdsView(HasTraits):
         plot = make_spectrum_plot(self.chan, self.hist, self.peak)
         self.plot = plot
 
+    #
+    # Buttons Fired methods
+    #
+
+    def _save_figure_fired(self):
+        w = 800
+        h = 600
+        savefile = "{0}/{1}{2}_Spectrum.png".format(self.save_directory, self.spectrum, self.detector)
+        save_plot(self.plot, savefile, w, h)        
+
 if __name__ == "__main__":
     pv = PyramdsView()
     pv.configure_traits()
-#    pv.edit_traits()
 
     # close the hdf5 file that is still open
-    pv.datafile.close()
+    if pv.datafile != None:
+        pv.datafile.close()
