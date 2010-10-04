@@ -2,7 +2,7 @@
 import numpy as np
 
 # path to data series (leave off run number and extension)
-file_series = '/python/PIXIE_runs/Co60_92710-' #EuCal/Eu152_92710-'
+file_series = '/python/PIXIE_runs/debug-' #EuCal/Eu152_92710-'
 
 spec_user_input = {
     'type'      : [],   # 0-Normal, 1-Compton, 2-GG, 3-GG/Compton, 4-Specgram

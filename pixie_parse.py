@@ -168,33 +168,46 @@ gGG2_T = h5file.createGroup(h5file.root.spectra.ggcoinc.det2, "t_arrays", "Time 
 
 norm_evts = [[row['energy_1'],row['energy_2'],row['timestamp']]
     for row in table.where("""(energy_1 != -1) | (energy_2 != -1)""") ]
+norm_evts = np.array(norm_evts)
 
-h5file.createArray(gNormal, 'norm_evts12', np.array(norm_evts), "Normal Timestamped Events - Det 1")
+h5file.createArray(gNormal, 'norm_evts12', norm_evts, "Normal Timestamped Events - Det 1")
 
 # Det 1
 
 spec_temp = np.zeros(energy_max + 1, dtype=np.int32)
 for x in [row[0] for row in norm_evts if row[0] != -1]:
-    spec_temp[x[0]] +=1
+    spec_temp[x] += 1
     
 h5file.createArray(gN1, 'norm1_spec', spec_temp, "Normal Spec Array - Det 1")
-
-for chn in range(energy_max + 1):
-    t_array_dump = np.array([i[2] for i in norm_evts if (int(i[0]) == chn)])
-    h5file.createArray(gN1_T, 'chan' + chn, t_array_dump)
 
 # Det 2
 
 spec_temp = np.zeros(energy_max + 1, dtype=np.int32)
 for x in [row[0] for row in norm_evts if row[0] != -1]:
-    spec_temp[x[0]] +=1
+    spec_temp[x] +=1
     
 h5file.createArray(gN2, 'norm2_spec', spec_temp, "Normal Spec Array - Det 2")
 
-for chn in range(energy_max + 1):
-    t_array_dump = np.array([i[1] for i in norm_evts if (int(i[1]) == chn)])
-    h5file.createArray(gN2_T, 'chan' + chn, t_array_dump)
-    
+## Append data to time logs for each bin for both det 1/2
+#for chn in range(energy_max + 1):
+#    # Create extensible arrays for det 1/2
+#    h5file.createEArray(gN1_T, 'chan' + str(chn), Float32Atom(), (0,), expectedrows=10, chunkshape=[10])
+#    h5file.createEArray(gN2_T, 'chan' + str(chn), Float32Atom(), (0,), expectedrows=10, chunkshape=[10])
+#
+#for evt in norm_evts:
+#    if evt[0] != -1:
+#        # Get extensible array
+#        chan_array = getattr(gN1_T, "chan" + str(int(evt[0])))
+#        # Add data to extensible array
+#        chan_array.append([evt[2]])
+#        chan_array.flush()
+#    elif evt[1] != -1:
+#        # Get extensible array
+#        chan_array = getattr(gN2_T, "chan" + str(int(evt[1])))
+#        # Add data to extensible array
+#        chan_array.append([evt[2]])
+#        chan_array.flush()
+
 ################################################################################
 # Store Det-1 & 2 arrays containing Compton counts##############################
 ################################################################################
@@ -203,8 +216,8 @@ compt_evts = [[row['energy_1'],row['energy_2'],row['timestamp']]
     for row in table.where("""(energy_0 == -1) & (energy_1 != -1) & (energy_2 == -1)""") ]
 compt_evts += [[row['energy_1'],row['energy_2'],row['timestamp']]
     for row in table.where("""(energy_0 == -1) & (energy_1 == -1) & (energy_2 != -1)""") ]
-
-h5file.createArray(gCompton, 'compt_evts12', np.array(compt_evts), "Compton-Supp Timestamped Events - Det 1/2")
+compt_evts = np.array(compt_evts)
+h5file.createArray(gCompton, 'compt_evts12', compt_evts, "Compton-Supp Timestamped Events - Det 1/2")
 
 # Det 1
 
@@ -214,10 +227,6 @@ for x in [row[0] for row in compt_evts if row[0] != -1]:
    
 h5file.createArray(gC1, 'compt1_spec', spec_temp, "Compton-Supp Spec Array - Det 1")
 
-for chn in range(energy_max + 1):
-    t_array_dump = np.array([i[2] for i in compt_evts if (int(i[0]) == chn)])
-    h5file.createArray(gC1_T, 'chan' + chn, t_array_dump)
-
 # Det 2
 
 spec_temp = np.zeros(energy_max + 1, dtype=np.int32)
@@ -225,10 +234,26 @@ for x in [row[1] for row in compt_evts if row[1] != -1]:
     spec_temp[x] += 1
 
 h5file.createArray(gC2, 'compt2_spec', spec_temp, "Compton-Supp Spec Array - Det 2")
-
-for chn in range(energy_max + 1):
-    t_array_dump = np.array([i[2] for i in compt_evts if (int(i[1]) == chn)])
-    h5file.createArray(gC2_T, 'chan' + chn, t_array_dump)
+    
+## Append data to time logs for each bin for both det 1/2
+#for chn in range(energy_max + 1):
+#    # Create extensible arrays for det 1/2
+#    h5file.createEArray(gC1_T, 'chan' + str(chn), Float32Atom(), (0,), expectedrows=10, chunkshape=[10])
+#    h5file.createEArray(gC2_T, 'chan' + str(chn), Float32Atom(), (0,), expectedrows=10, chunkshape=[10])
+#
+#for evt in compt_evts:
+#    if evt[0] != -1:
+#        # Get extensible array
+#        chan_array = getattr(gC1_T, "chan" + str(int(evt[0])))
+#        # Add data to extensible array
+#        chan_array.append([evt[2]])
+#        chan_array.flush()
+#    elif evt[1] != -1:
+#        # Get extensible array
+#        chan_array = getattr(gC2_T, "chan" + str(int(evt[1])))
+#        # Add data to extensible array
+#        chan_array.append([evt[2]])
+#        chan_array.flush()
 
 ################################################################################
 # Store Det 1 & 2 Gamma-Gamma arrays containg counts############################
@@ -236,6 +261,7 @@ for chn in range(energy_max + 1):
 
 gg_evts = [[row['energy_1'],row['energy_2'],row['timestamp']]
     for row in table.where("""(energy_0 == -1) & (energy_1 != -1) & (energy_2 != -1) & (deltaT_12 < 90)""") ]
+gg_evts = np.array(gg_evts)
 
 h5file.createArray(gGGcoinc, 'gg_evts', np.array(gg_evts), "Gamma-Gamma Timestamped Events - Det 1/2")
 
@@ -247,10 +273,6 @@ for x in gg_evts:
 
 h5file.createArray(gGG1, 'gg1_spec', np.array(spec_temp), "Gamma-Gamma Spec Array - Det 1")
 
-for chn in range(energy_max + 1):
-    t_array_dump = np.array([i[2] for i in gg_evts if (int(i[0]) == chn)])
-    h5file.createArray(gGG1_T, 'chan' + chn, t_array_dump)
-
 # Det 2
 
 spec_temp = np.zeros(energy_max + 1, dtype=np.int32)
@@ -259,9 +281,25 @@ for x in gg_evts:
     
 h5file.createArray(gGG2, 'gg2_spec', np.array(spec_temp), "Gamma-Gamma Spec Array - Det 2")
 
-for chn in range(energy_max + 1):
-    t_array_dump = np.array([i[2] for i in gg_evts if (int(i[1]) == chn)])
-    h5file.createArray(gGG2_T, 'chan' + chn, t_array_dump)
+## Append data to time logs for each bin for both det 1/2
+#for chn in range(energy_max + 1):
+#    # Create extensible arrays for det 1/2
+#    h5file.createEArray(gGG1_T, 'chan' + str(chn), Float32Atom(), (0,), expectedrows=10, chunkshape=[1])
+#    h5file.createEArray(gGG2_T, 'chan' + str(chn), Float32Atom(), (0,), expectedrows=10, chunkshape=[1])
+#
+#for evt in compt_evts:
+#    if evt[0] != -1:
+#        # Get extensible array
+#        chan_array = getattr(gGG1_T, "chan" + str(int(evt[0])))
+#        # Add data to extensible array
+#        chan_array.append([evt[2]])
+#        chan_array.flush()
+#    elif evt[1] != -1:
+#        # Get extensible array
+#        chan_array = getattr(gGG2_T, "chan" + str(int(evt[1])))
+#        # Add data to extensible array
+#        chan_array.append([evt[2]])
+#        chan_array.flush()
 
 # Specgram coincidence array for Det 1/2
 #x = [row[0] for row in f.root.spectra.gg_evts]
