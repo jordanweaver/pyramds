@@ -30,6 +30,7 @@ size = (500, 500)
 class PyramdsView(HasTraits):
     plot = Instance(Component)
     index_selections = List
+    peak_indices = Dict
 
     # Database info
     filename = File
@@ -95,15 +96,22 @@ class PyramdsView(HasTraits):
         pchn = np.array([])
         peak = np.array([])
 
+        self.peak_indices = {}
+
         self.chan = chan
         self.hist = hist
         self.pchn = pchn
         self.peak = peak
 
+
     def draw_plot(self):
         label = "Detector {0} {1} Spectrum".format(self.detector, self.spectrum)
         plot = make_spectrum_plot(self.chan, self.hist, self.pchn, self.peak, label)
         self.plot = plot
+
+    def draw_peak_plot(self):
+        self.plot.plots['plot1'][0].index.set_data(self.pchn)
+        self.plot.plots['plot1'][0].value.set_data(self.peak)
 
     #
     # Set Trait Defaults
@@ -199,22 +207,33 @@ class PyramdsView(HasTraits):
         self.index_selections = self.plot.plots['plot0'][0].index.metadata['selections']
 
     def _index_selections_changed(self, old, new):
-        if old != []:
-            return 
-
         # Some fake way of selecting the peak
         pi = []
         for si in self.index_selections:
-            pi.extend( range(si-10, si+11) )
+            # Prevent the peak-finding algorithm from running 
+            # unnecessarily often by caching the results
+            if si not in self.peak_indices:
+                self.peak_indices[si] = range(si-10, si+11) 
+            pi.extend( self.peak_indices[si] )
+
+        # Remove old selections
+        for key in self.peak_indices.keys():
+            if key not in self.index_selections:
+                del self.peak_indices[key]
+
+        # Set the points to highlight
         pchn = np.array(pi)
-        peak = self.hist[pchn]
+        if pi == []:
+            peak = np.array([])
+        else:
+            peak = self.hist[pchn]
 
         # Set the traits
         self.pchn = pchn
         self.peak = peak
 
         # Redraw the plot
-        self.draw_plot()
+        self.draw_peak_plot()
 
     #
     # Buttons Fired methods
