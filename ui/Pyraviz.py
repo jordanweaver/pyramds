@@ -65,7 +65,7 @@ class PyramdsView(HasTraits):
 
     traits_view = View(
         VGroup(
-            Item('filename', label="Data File"),
+            Group(Item('filename', label="Data File")),
             Item('plot', editor=ComponentEditor(size=size), show_label=False), 
             HGroup(
                 Item('detector'), 
@@ -101,7 +101,8 @@ class PyramdsView(HasTraits):
         self.peak = peak
 
     def draw_plot(self):
-        plot = make_spectrum_plot(self.chan, self.hist, self.pchn, self.peak)
+        label = "Detector {0} {1} Spectrum".format(self.detector, self.spectrum)
+        plot = make_spectrum_plot(self.chan, self.hist, self.pchn, self.peak, label)
         self.plot = plot
 
     #
@@ -125,13 +126,13 @@ class PyramdsView(HasTraits):
 
     def _chan_default(self):
         if self.dfr == None:
-            return np.array([])
+            return np.array([0])
         else:
             return np.arange(len(self.hist))
 
     def _hist_default(self):
         if self.dfr == None:
-            return np.array([])
+            return np.array([1000])
         else:
             hist_set = getattr(self.dfr.spectra, "{0}{1}_spec".format(self.spectrum_set_names[self.spectrum], self.detector))
             hist = hist_set.read()
