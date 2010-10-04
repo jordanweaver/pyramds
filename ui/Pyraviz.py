@@ -123,9 +123,13 @@ class PyramdsView(HasTraits):
         title="Pyramds Visualizer",
         )
 
-    def load_histogram_data(self):
+    def get_historgam_data_set(self):
         hist_grp = getattr(self.dfr.spectra, self.spectrum_group_names[self.spectrum])
         hist_set = getattr(hist_grp, "{0}{1}_spec".format(self.spectrum_set_names[self.spectrum], self.detector))
+        return hist_set
+
+    def load_histogram_data(self):
+        hist_set = self.get_histogram_data_set()
         hist = hist_set[-1]
         chan = np.arange(len(hist))
         pchn = np.array([])
@@ -181,8 +185,7 @@ class PyramdsView(HasTraits):
         if self.dfr == None:
             return np.array([1000])
         else:
-            hist_grp = getattr(self.dfr.spectra, self.spectrum_group_names[self.spectrum])
-            hist_set = getattr(hist_grp, "{0}{1}_spec".format(self.spectrum_set_names[self.spectrum], self.detector))
+            hist_set = self.get_histogram_data_set()
             hist = hist_set[-1]
             return hist
 
