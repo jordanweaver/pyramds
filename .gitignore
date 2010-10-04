@@ -2,3 +2,5 @@
 *.kpf
 *.h5
 *.png
+*.ifm
+*.bin
