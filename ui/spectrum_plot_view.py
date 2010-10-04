@@ -53,7 +53,8 @@ def make_spectrum_plot(chan, hist, pchn, peak, label="Spectrum Plot"):
     container.y_axis.title_font = "Times 16"
     container.y_axis.tick_label_font = "Times 12"
 
-    # FIXME Title Spacing.
+    # Get Title Spacing right
+    container.padding_left = 65
 
     return container
 
