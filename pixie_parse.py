@@ -167,15 +167,6 @@ gNormal = h5file.createGroup(h5file.root.spectra, "normal", "Normal Data")
 gCompton = h5file.createGroup(h5file.root.spectra, "compton", "Compton-Supp Data")
 gGGcoinc = h5file.createGroup(h5file.root.spectra, "ggcoinc", "Gamma-Gamma Data")
 
-gN1 = h5file.createGroup(h5file.root.spectra.normal, "det1", "Det 1 Normal Data")
-gN2 = h5file.createGroup(h5file.root.spectra.normal, "det2", "Det 2 Normal Data")
-
-gC1 = h5file.createGroup(h5file.root.spectra.compton, "det1", "Det 1 Compton-Supp Data")
-gC2 = h5file.createGroup(h5file.root.spectra.compton, "det2", "Det 2 Compton-Supp Data")
-
-gGG1 = h5file.createGroup(h5file.root.spectra.ggcoinc, "det1", "Det 1 Gamma-Gamma Data")
-gGG2 = h5file.createGroup(h5file.root.spectra.ggcoinc, "det2", "Det 2 Gamma-Gamma Data")
-
 ################################################################################
 # Store Det-1 & 2 arrays containing normal counts###############################
 ################################################################################
@@ -203,7 +194,7 @@ for row in norm12table:
 dt_array[-1] = dt_temp.copy()
 
     
-h5file.createArray(gN1, 'norm1_spec', dt_array, "Normal Time-Chunked Spec Array - Det 1")
+h5file.createArray(gNormal, 'norm1_spec', dt_array, "Normal Time-Chunked Spec Array - Det 1")
 
 # Det 2
 dt_temp = np.zeros(energy_max + 1, dtype=np.int32)
@@ -217,7 +208,7 @@ for row in norm12table:
         dt_temp[row['energy_2']] += 1
 dt_array[-1] = dt_temp.copy()
         
-h5file.createArray(gN2, 'norm2_spec', dt_array, "Normal Time-Chunked Spec Array - Det 2")
+h5file.createArray(gNormal, 'norm2_spec', dt_array, "Normal Time-Chunked Spec Array - Det 2")
 
 ################################################################################
 # Store Det-1 & 2 arrays containing Compton counts##############################
@@ -253,7 +244,7 @@ for row in compt1table:
         dt_temp[row['energy']] += 1
 dt_array[-1] = dt_temp.copy()
    
-h5file.createArray(gC1, 'compt1_spec', dt_array, "Compton-Supp Time-Chunked Spec Array - Det 1")
+h5file.createArray(gCompton, 'compt1_spec', dt_array, "Compton-Supp Time-Chunked Spec Array - Det 1")
 
 # Det 2
 dt_temp = np.zeros(energy_max + 1, dtype=np.int32)
@@ -267,7 +258,7 @@ for row in compt2table:
         dt_temp[row['energy']] += 1
 dt_array[-1] = dt_temp.copy()
    
-h5file.createArray(gC2, 'compt2_spec', dt_array, "Compton-Supp Time-Chunked Spec Array - Det 2")
+h5file.createArray(gCompton, 'compt2_spec', dt_array, "Compton-Supp Time-Chunked Spec Array - Det 2")
 
 ################################################################################
 # Store Det 1 & 2 Gamma-Gamma arrays containg counts############################
@@ -295,7 +286,7 @@ for row in gg12table:
         dt_temp[row['energy_1']] += 1
 dt_array[-1] = dt_temp.copy()
 
-h5file.createArray(gGG1, 'gg1_spec', dt_array, "G-G Time-Chunked Spec Array - Det 1")
+h5file.createArray(gGGcoinc, 'gg1_spec', dt_array, "G-G Time-Chunked Spec Array - Det 1")
 
 # Det 2
 dt_temp = np.zeros(energy_max + 1, dtype=np.int32)
@@ -309,6 +300,6 @@ for row in gg12table:
         dt_temp[row['energy_2']] += 1
 dt_array[-1] = dt_temp.copy()
 
-h5file.createArray(gGG1, 'gg2_spec', dt_array, "G-G Time-Chunked Spec Array - Det 2")
+h5file.createArray(gGGcoinc, 'gg2_spec', dt_array, "G-G Time-Chunked Spec Array - Det 2")
     
 h5file.close()
