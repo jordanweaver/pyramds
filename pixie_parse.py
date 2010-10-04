@@ -164,7 +164,9 @@ gGG2_T = h5file.createGroup(h5file.root.spectra.ggcoinc.det2, "t_arrays", "Time 
 # Store Det-1 & 2 arrays containing normal counts###############################
 ################################################################################
 
-norm_evts = [[row['energy_1'],row['energy_2'],row['timestamp']] for row in table.where("""(energy_1 != -1) | (energy_2 != -1""") ]
+norm_evts = [[row['energy_1'],row['energy_2'],row['timestamp']]
+    for row in table.where("""(energy_1 != -1) | (energy_2 != -1""") ]
+
 h5file.createArray(gNormal, 'norm_evts12', np.array(norm_evts), "Normal Timestamped Events - Det 1")
 
 # Det 1

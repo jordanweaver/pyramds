@@ -15,17 +15,40 @@ spec_user_input = {
 # DETECTOR CHARACTERISTICS (i.e. energy calibrations, resolution curves, etc.)
 
 # Edit these values to correspond to current system being used (see ORTEC pdf).
-enerfit = {'0':'1.568643 0.382061', '1':'1.568643 0.382061', '2':'2.745898 0.417368', '3':''}
-fwhmfit = {'0':'', '1':'1.8468E+000 7E-005 3E-008', '2':'1.8468E+000 7E-005 3E-008', '3':''}
-mca_cal = {'0':'3\r\n1.568643E+000 3.820606E-001 4.662797E-007', '1':'3\r\n1.568643E+000 3.820606E-001 4.662797E-007', '2':'3\r\n2.745898E+000 4.173675E-001 1.642237E-006', '3':''}
-shape_cal = {'0':'', '1':'3\r\n1.8468E+000 7E-005 3E-008', '2':'', '3':''}
+enerfit = {
+    '0' :   '1.568643 0.382061',
+    '1' :   '1.568643 0.382061',
+    '2' :   '2.745898 0.417368',
+    '3' :   ''
+    }
+
+fwhmfit = {
+    '0' :   '',
+    '1' :   '1.8468E+000 7E-005 3E-008',
+    '2' :   '1.8468E+000 7E-005 3E-008',
+    '3' :   ''
+    }
+
+mca_cal = {
+    '0' :   '3\r\n1.568643E+000 3.820606E-001 4.662797E-007',
+    '1' :   '3\r\n1.568643E+000 3.820606E-001 4.662797E-007',
+    '2' :   '3\r\n2.745898E+000 4.173675E-001 1.642237E-006',
+    '3' :   ''
+    }
+
+shape_cal = {
+    '0' :   '',
+    '1' :   '3\r\n1.8468E+000 7E-005 3E-008',
+    '2' :   '',
+    '3' :   ''
+    }
 
 en_coeff = {}
 fwhm_coeff = {}
 for channel in range(4):
     en_coeff[str(channel)] = map(float, enerfit[str(channel)].split())
-    fwhm_coeff[(channel)] = map(float, fwhmfit[str(channel)].split())
-    
+    fwhm_coeff[str(channel)] = map(float, fwhmfit[str(channel)].split())    
+
 # Supply the path to the custom signature library. Builds necessary lookup arrays
 
 lib_name = '/python/PYRAMDS/sig_library.txt' 
@@ -61,3 +84,10 @@ with open(lib_name, 'r') as ginput:
 energy_max = 8192 # maximum number of bins (energies) to be stored for detectors
 tunits = 1000./75. # 13.3333... nanoseconds (for PIXIE timing)
 short_window = 90. # timing window for gamma-gamma condition (nanoseconds)
+
+# Store the bin-energy mapping for plotting spectra
+en_plot_axis = {}
+for c, chn in enumerate(en_coeff.keys()):
+    en_plot_axis[chn] = np.zeros( (energy_max + 1), dtype=np.float32)
+    for bin in range(energy_max + 1):
+        en_plot_axis[chn][bin] = en_coeff[chn][0] + en_coeff[chn][1] * bin
