@@ -196,8 +196,8 @@ dt_array = np.zeros((t_array_dim + 1, energy_max + 1), dtype=np.int32)
 ti = 0
 for row in norm12table:
     if (row['timestamp'] - t_start) >= (ti + 1) * t_steps:
-        dt_array[ti] = dt_temp.copy()
         ti += 1
+        dt_array[ti] = dt_temp.copy()
     if row['energy_1'] >= 0:
         dt_temp[row['energy_1']] += 1
 dt_array[-1] = dt_temp.copy()
@@ -211,8 +211,8 @@ dt_array = np.zeros((t_array_dim + 1, energy_max + 1), dtype=np.int32)
 ti = 0
 for row in norm12table:
     if (row['timestamp'] - t_start) >= (ti + 1) * t_steps:
-        dt_array[ti] = dt_temp.copy()
         ti += 1
+        dt_array[ti] = dt_temp.copy()
     if row['energy_2'] >= 0:
         dt_temp[row['energy_2']] += 1
 dt_array[-1] = dt_temp.copy()
@@ -247,8 +247,8 @@ dt_array = np.zeros((t_array_dim + 1, energy_max + 1), dtype=np.int32)
 ti = 0
 for row in compt1table:
     if (row['timestamp'] - t_start) >= (ti + 1) * t_steps:
-        dt_array[ti] = dt_temp.copy()
         ti += 1
+        dt_array[ti] = dt_temp.copy()
     if row['energy'] >= 0:
         dt_temp[row['energy']] += 1
 dt_array[-1] = dt_temp.copy()
@@ -261,8 +261,8 @@ dt_array = np.zeros((t_array_dim + 1, energy_max + 1), dtype=np.int32)
 ti = 0
 for row in compt2table:
     if (row['timestamp'] - t_start) >= (ti + 1) * t_steps:
-        dt_array[ti] = dt_temp.copy()
         ti += 1
+        dt_array[ti] = dt_temp.copy()
     if row['energy'] >= 0:
         dt_temp[row['energy']] += 1
 dt_array[-1] = dt_temp.copy()
@@ -289,8 +289,8 @@ dt_array = np.zeros((t_array_dim + 1, energy_max + 1), dtype=np.int32)
 ti = 0
 for row in gg12table:
     if (row['timestamp'] - t_start) >= (ti + 1) * t_steps:
-        dt_array[ti] = dt_temp.copy()
         ti += 1
+        dt_array[ti] = dt_temp.copy()
     if row['energy_1'] >= 0:
         dt_temp[row['energy_1']] += 1
 dt_array[-1] = dt_temp.copy()
@@ -303,8 +303,8 @@ dt_array = np.zeros((t_array_dim + 1, energy_max + 1), dtype=np.int32)
 ti = 0
 for row in gg12table:
     if (row['timestamp'] - t_start) >= (ti + 1) * t_steps:
-        dt_array[ti] = dt_temp.copy()
         ti += 1
+        dt_array[ti] = dt_temp.copy()
     if row['energy_2'] >= 0:
         dt_temp[row['energy_2']] += 1
 dt_array[-1] = dt_temp.copy()
