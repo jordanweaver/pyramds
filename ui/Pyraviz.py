@@ -79,16 +79,22 @@ class PyramdsView(HasTraits):
         'clicked_selected': {},
         })
 
+    detection_limits_title = Str("Detection Limits")
+
     traits_view = View(
         VGroup(
             Group(Item('filename', label="Data File")),
             HSplit(
                 Item('plot', editor=ComponentEditor(size=size), show_label=False),
                 VGroup(
-                    Group(Item('isotope', editor=EnumEditor(name='isotope_enum'))),
-                    Group(Item('peaknum', editor=EnumEditor(name='peaknum_enum'), label="Peak No.")),
+                    HGroup(spring, Item('detection_limits_title', style='readonly', show_label=False), spring),
+                    VGroup(
+                        Item('isotope', editor=EnumEditor(name='isotope_enum'), label="Isotope"),
+                        Item('peaknum', editor=EnumEditor(name='peaknum_enum'), label="Peak No.")
+                    ),
                     Item('detection_limits_html', editor=HTMLEditor(), show_label=False),
                     Item('save_detection_limits', show_label=False),
+                    label="Detection Limits",
                 ),
             ),
             HGroup(
