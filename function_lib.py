@@ -35,4 +35,4 @@ def bin_count(t_start, t_stop, group):
         counts = len(t_pass)
         cnt_array[chan] = counts
 
-    return cnt_array 
+    return cnt_array

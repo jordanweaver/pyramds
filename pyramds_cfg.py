@@ -81,10 +81,12 @@ with open(lib_name, 'r') as ginput:
             sig_lookup[int(chn)][zaid] = [left_marker, right_marker]
 
 # Detector system variables
-
 energy_max = 8192 # maximum number of bins (energies) to be stored for detectors
 tunits = 1000./75. # 13.3333... nanoseconds (for PIXIE timing)
 short_window = 90. # timing window for gamma-gamma condition (nanoseconds)
+
+# Timing chunks for storing spectrum states
+t_steps = 60. # seconds
 
 # Store the bin-energy mapping for plotting spectra
 en_plot_axis = {}
