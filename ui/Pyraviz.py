@@ -59,6 +59,11 @@ class PyramdsView(HasTraits):
         "Compton":     "compt",
         "Gamma-Gamma": "gg",
         }
+    spectrum_group_names = {
+        "Normal":      "normal",
+        "Compton":     "compton",
+        "Gamma-Gamma": "ggcoinc",
+        }
 
     # UI Stuff
     start_time = Float
@@ -119,8 +124,9 @@ class PyramdsView(HasTraits):
         )
 
     def load_histogram_data(self):
-        hist_set = getattr(self.dfr.spectra, "{0}{1}_spec".format(self.spectrum_set_names[self.spectrum], self.detector))
-        hist = hist_set.read()
+        hist_grp = getattr(self.dfr.spectra, self.spectrum_group_names[self.spectrum])
+        hist_set = getattr(hist_grp, "{0}{1}_spec".format(self.spectrum_set_names[self.spectrum], self.detector))
+        hist = hist_set[-1]
         chan = np.arange(len(hist))
         pchn = np.array([])
         peak = np.array([])
@@ -175,8 +181,9 @@ class PyramdsView(HasTraits):
         if self.dfr == None:
             return np.array([1000])
         else:
-            hist_set = getattr(self.dfr.spectra, "{0}{1}_spec".format(self.spectrum_set_names[self.spectrum], self.detector))
-            hist = hist_set.read()
+            hist_grp = getattr(self.dfr.spectra, self.spectrum_group_names[self.spectrum])
+            hist_set = getattr(hist_grp, "{0}{1}_spec".format(self.spectrum_set_names[self.spectrum], self.detector))
+            hist = hist_set[-1]
             return hist
 
     def _pchn_default(self):
