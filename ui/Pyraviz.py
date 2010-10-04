@@ -9,9 +9,10 @@ import scipy
 
 # ETS imports
 from enthought.traits.api import HasTraits, Instance, Str, Enum, Any, List, Array, Dict, Button, NO_COMPARE, Float, \
-    File, Directory, on_trait_change
+    File, Directory, on_trait_change, HTML
 
-from enthought.traits.ui.api import View, Item, Group, VGroup, HGroup, EnumEditor, TableEditor, TabularEditor, spring
+from enthought.traits.ui.api import View, Item, Group, VGroup, HGroup, EnumEditor, TableEditor, TabularEditor, spring, Spring, \
+    HTMLEditor, HSplit, VSplit, VGrid
 from enthought.traits.ui.ui_editors.array_view_editor import ArrayViewEditor
 from enthought.traits.ui.menu import Action
 
@@ -21,6 +22,7 @@ from enthought.enable.api import Component, ComponentEditor, Window
 from enthought.chaco.tools.api import PanTool, ZoomTool, LegendTool, TraitsTool, DragZoom
 
 from spectrum_plot_view import make_spectrum_plot, save_plot
+from detection_limits_helpers import detection_limits_to_html
 
 np = numpy
 tb = tables
@@ -40,8 +42,6 @@ class PyramdsView(HasTraits):
     # Save Information
     save_directory = Directory(".")
     save_figure = Button(label="Save Figure")
-#    save_table = Button(label="Save Table")
-    
 
 
     # plot data
@@ -64,10 +64,33 @@ class PyramdsView(HasTraits):
     start_time = Float
     end_time = Float
 
+    # Detection Limits 
+    isotope_enum = List
+    peaknum_enum = List
+
+    isotope = Str
+    peaknum = Str
+
+    detection_limits_html = HTML
+    save_detection_limits = Button(label="Save Detection Limits")
+
+    detection_limits = Dict({
+        'lookup_selected': {},
+        'clicked_selected': {},
+        })
+
     traits_view = View(
         VGroup(
             Group(Item('filename', label="Data File")),
-            Item('plot', editor=ComponentEditor(size=size), show_label=False), 
+            HSplit(
+                Item('plot', editor=ComponentEditor(size=size), show_label=False),
+                VGroup(
+                    Group(Item('isotope', editor=EnumEditor(name='isotope_enum'))),
+                    Group(Item('peaknum', editor=EnumEditor(name='peaknum_enum'), label="Peak No.")),
+                    Item('detection_limits_html', editor=HTMLEditor(), show_label=False),
+                    Item('save_detection_limits', show_label=False),
+                ),
+            ),
             HGroup(
                 Item('detector'), 
                 spring,
@@ -112,6 +135,10 @@ class PyramdsView(HasTraits):
     def draw_peak_plot(self):
         self.plot.plots['plot1'][0].index.set_data(self.pchn)
         self.plot.plots['plot1'][0].value.set_data(self.peak)
+
+    def draw_detection_limits(self):
+        detection_limits_html = detection_limits_to_html(self.detection_limits)
+        self.detection_limits_html = detection_limits_html
 
     #
     # Set Trait Defaults
@@ -170,6 +197,21 @@ class PyramdsView(HasTraits):
 
     def _spectrum_default(self):
         return "Normal"
+
+    def _isotope_enum_default(self):
+        return ["None"]
+
+    def _peaknum_enum_default(self):
+        return ["0"]
+
+    def _isotope_default(self):
+        return "None"
+
+    def _peaknum_default(self):
+        return "0"
+
+    def _detection_limits_html_default(self):
+        return "<b>No peaks selected.</b>"
 
     #
     # Define Traits Changed
@@ -235,6 +277,19 @@ class PyramdsView(HasTraits):
         # Redraw the plot
         self.draw_peak_plot()
 
+        # Calculate detection limits
+        for si in self.index_selections:
+            if si not in self.detection_limits['clicked_selected']:
+                self.detection_limits['clicked_selected'][si] = 0.5
+
+        # Remove old detection limits
+        for key in self.detection_limits['clicked_selected'].keys():
+            if key not in self.index_selections:
+                del self.detection_limits['clicked_selected'][key]
+
+        # Redraw the detection limits display
+        self.draw_detection_limits()
+        
     #
     # Buttons Fired methods
     #
