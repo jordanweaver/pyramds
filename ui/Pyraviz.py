@@ -9,7 +9,7 @@ import scipy
 
 # ETS imports
 from enthought.traits.api import HasTraits, Instance, Str, Enum, Any, List, Array, Dict, Button, NO_COMPARE, Float, \
-    File, Directory
+    File, Directory, on_trait_change
 
 from enthought.traits.ui.api import View, Item, Group, VGroup, HGroup, EnumEditor, TableEditor, TabularEditor, spring
 from enthought.traits.ui.ui_editors.array_view_editor import ArrayViewEditor
@@ -29,6 +29,7 @@ size = (500, 500)
 
 class PyramdsView(HasTraits):
     plot = Instance(Component)
+    index_selections = List
 
     # Database info
     filename = File
@@ -41,9 +42,11 @@ class PyramdsView(HasTraits):
 #    save_table = Button(label="Save Table")
     
 
+
     # plot data
     chan = Array
     hist = Array
+    pchn = Array
     peak = Array
 
     title = Str("")
@@ -89,14 +92,17 @@ class PyramdsView(HasTraits):
         hist_set = getattr(self.dfr.spectra, "{0}{1}_spec".format(self.spectrum_set_names[self.spectrum], self.detector))
         hist = hist_set.read()
         chan = np.arange(len(hist))
+        pchn = np.array([])
         peak = np.array([])
 
         self.chan = chan
         self.hist = hist
+        self.pchn = pchn
         self.peak = peak
 
     def draw_plot(self):
-        pass
+        plot = make_spectrum_plot(self.chan, self.hist, self.pchn, self.peak)
+        self.plot = plot
 
     #
     # Set Trait Defaults
@@ -131,11 +137,14 @@ class PyramdsView(HasTraits):
             hist = hist_set.read()
             return hist
 
+    def _pchn_default(self):
+        return np.array([])
+
     def _peak_default(self):
         return np.array([])
 
     def _plot_default(self):
-        plot = make_spectrum_plot(self.chan, self.hist, self.peak)
+        plot = make_spectrum_plot(self.chan, self.hist, self.pchn, self.peak)
         return plot
 
     def _start_time_default(self):
@@ -171,18 +180,40 @@ class PyramdsView(HasTraits):
         self.start_time = 0.0
         self.end_time = self.dfr.bin_data_parse.readout[-1]['timestamp'] - self.dfr.bin_data_parse.readout[0]['timestamp']
 
-        plot = make_spectrum_plot(self.chan, self.hist, self.peak)
-        self.plot = plot
+        self.draw_plot()
 
     def _detector_changed(self):
         self.load_histogram_data()
-        plot = make_spectrum_plot(self.chan, self.hist, self.peak)
-        self.plot = plot
+        self.draw_plot()
 
     def _spectrum_changed(self):
         self.load_histogram_data()
-        plot = make_spectrum_plot(self.chan, self.hist, self.peak)
-        self.plot = plot
+        self.draw_plot()
+
+    def _plot_changed(self):
+        self.plot.plots['plot0'][0].index.on_trait_change(self._index_metadata_handler, 'metadata_changed')
+        self.index_selections = self.plot.plots['plot0'][0].index.metadata['selections']
+
+    def _index_metadata_handler(self):
+        self.index_selections = self.plot.plots['plot0'][0].index.metadata['selections']
+
+    def _index_selections_changed(self, old, new):
+        if old != []:
+            return 
+
+        # Some fake way of selecting the peak
+        pi = []
+        for si in self.index_selections:
+            pi.extend( range(si-10, si+11) )
+        pchn = np.array(pi)
+        peak = self.hist[pchn]
+
+        # Set the traits
+        self.pchn = pchn
+        self.peak = peak
+
+        # Redraw the plot
+        self.draw_plot()
 
     #
     # Buttons Fired methods
@@ -192,7 +223,7 @@ class PyramdsView(HasTraits):
         w = 800
         h = 600
         savefile = "{0}/{1}{2}_Spectrum.png".format(self.save_directory, self.spectrum, self.detector)
-        save_plot(self.plot, savefile, w, h)        
+        save_plot(self.plot, savefile, w, h)
 
 if __name__ == "__main__":
     pv = PyramdsView()
