@@ -200,6 +200,8 @@ for row in norm12table:
         ti += 1
     if row['energy_1'] >= 0:
         dt_temp[row['energy_1']] += 1
+dt_array[-1] = dt_temp.copy()
+
     
 h5file.createArray(gN1, 'norm1_spec', dt_array, "Normal Time-Chunked Spec Array - Det 1")
 
@@ -213,6 +215,7 @@ for row in norm12table:
         ti += 1
     if row['energy_2'] >= 0:
         dt_temp[row['energy_2']] += 1
+dt_array[-1] = dt_temp.copy()
         
 h5file.createArray(gN2, 'norm2_spec', dt_array, "Normal Time-Chunked Spec Array - Det 2")
 
@@ -248,6 +251,7 @@ for row in compt1table:
         ti += 1
     if row['energy'] >= 0:
         dt_temp[row['energy']] += 1
+dt_array[-1] = dt_temp.copy()
    
 h5file.createArray(gC1, 'compt1_spec', dt_array, "Compton-Supp Time-Chunked Spec Array - Det 1")
 
@@ -261,6 +265,7 @@ for row in compt2table:
         ti += 1
     if row['energy'] >= 0:
         dt_temp[row['energy']] += 1
+dt_array[-1] = dt_temp.copy()
    
 h5file.createArray(gC2, 'compt2_spec', dt_array, "Compton-Supp Time-Chunked Spec Array - Det 2")
 
@@ -288,7 +293,8 @@ for row in gg12table:
         ti += 1
     if row['energy_1'] >= 0:
         dt_temp[row['energy_1']] += 1
-    
+dt_array[-1] = dt_temp.copy()
+
 h5file.createArray(gGG1, 'gg1_spec', dt_array, "G-G Time-Chunked Spec Array - Det 1")
 
 # Det 2
@@ -301,7 +307,8 @@ for row in gg12table:
         ti += 1
     if row['energy_2'] >= 0:
         dt_temp[row['energy_2']] += 1
-    
+dt_array[-1] = dt_temp.copy()
+
 h5file.createArray(gGG1, 'gg2_spec', dt_array, "G-G Time-Chunked Spec Array - Det 2")
     
 h5file.close()
