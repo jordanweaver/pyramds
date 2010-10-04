@@ -26,14 +26,13 @@ def calc_det_limit(chn, zaid, spec_array):
     
     return el_c, el_d
 
-def bin_count(t_start, t_stop, type, det):
+def bin_count(t_start, t_stop, group):
     
     cnt_array = np.zeros( (energy_max + 1), dtype=np.int32)
     
-    for bin in range(energy_max + 1):
-        array_obj = '/root/spectra/%s/%s/t_arrays/chan%d' % (type, det, bin)
-        t_pass = [evt for evt in array_obj if (t_start <= evt <= t_stop)]
+    for chan in group:
+        t_pass = [i for i in chan if (t_start <= chan[i] <= t_stop)]
         counts = len(t_pass)
-        cnt_array[bin] = counts
+        cnt_array[chan] = counts
 
     return cnt_array 

@@ -1,7 +1,8 @@
 #!/usr/bin/env python
+import numpy as np
 
 # path to data series (leave off run number and extension)
-file_series = 'Co60_92710-'
+file_series = '/python/PIXIE_runs/Co60_92710-' #EuCal/Eu152_92710-'
 
 spec_user_input = {
     'type'      : [],   # 0-Normal, 1-Compton, 2-GG, 3-GG/Compton, 4-Specgram
@@ -23,7 +24,7 @@ enerfit = {
     }
 
 fwhmfit = {
-    '0' :   '',
+    '0' :   '1.8468E+000 7E-005 3E-008',
     '1' :   '1.8468E+000 7E-005 3E-008',
     '2' :   '1.8468E+000 7E-005 3E-008',
     '3' :   ''
@@ -45,7 +46,7 @@ shape_cal = {
 
 en_coeff = {}
 fwhm_coeff = {}
-for channel in range(4):
+for channel in range(3):
     en_coeff[str(channel)] = map(float, enerfit[str(channel)].split())
     fwhm_coeff[str(channel)] = map(float, fwhmfit[str(channel)].split())    
 
@@ -89,5 +90,5 @@ short_window = 90. # timing window for gamma-gamma condition (nanoseconds)
 en_plot_axis = {}
 for c, chn in enumerate(en_coeff.keys()):
     en_plot_axis[chn] = np.zeros( (energy_max + 1), dtype=np.float32)
-    for bin in range(energy_max + 1):
-        en_plot_axis[chn][bin] = en_coeff[chn][0] + en_coeff[chn][1] * bin
+    for marker in range(energy_max + 1):
+        en_plot_axis[chn][marker] = en_coeff[chn][0] + en_coeff[chn][1] * marker

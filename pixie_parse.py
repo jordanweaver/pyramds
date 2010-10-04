@@ -132,6 +132,8 @@ while os.path.exists(file_path + '.bin'):
             word = fin.read(2)    
         
             buffer_no += 1
+            if buffer_no%100 == 0:
+                print('\rBuffer No. {0}'.format(buffer_no))
             
             # Flush data to the HFD5 table and start new buffer    
             table.flush()
@@ -165,7 +167,7 @@ gGG2_T = h5file.createGroup(h5file.root.spectra.ggcoinc.det2, "t_arrays", "Time 
 ################################################################################
 
 norm_evts = [[row['energy_1'],row['energy_2'],row['timestamp']]
-    for row in table.where("""(energy_1 != -1) | (energy_2 != -1""") ]
+    for row in table.where("""(energy_1 != -1) | (energy_2 != -1)""") ]
 
 h5file.createArray(gNormal, 'norm_evts12', np.array(norm_evts), "Normal Timestamped Events - Det 1")
 
