@@ -2,6 +2,8 @@
 
 # Definitions of all custom functions to be used by PYRAMDS
 
+import numpy as np
+
 def calc_det_limit(LM, RM, spec_array):
     """
     Calculates detection limits by first averaging counts about left/right
