@@ -508,8 +508,6 @@ class PyramdsView(HasTraits):
 
             # Redraw the plot
             self.redraw_peak_plot()
-
-
     
     def _save_figure_fired(self):
         w = 800

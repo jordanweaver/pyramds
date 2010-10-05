@@ -29,13 +29,20 @@ def detection_limits_to_tsv(detection_limits):
     s = ""
 
     if detection_limits['lookup_selected'] != {}:
-        pass
+        s += ("Lookup Selected Peaks:\n\n"
+             "Isotope\tPeaknum\tLD\tLC\n")
+
+        for row in sorted(detection_limits['lookup_selected']):
+            s += "{0}\t{1}\t{2}\t{3}\n".format(*row)
+        s += "\n\n\n"
 
     if detection_limits['clicked_selected'] != {}:
-        s += ("Peaks Selected from Plot:\n"
-             "Index\tLimit\n")
+        s += ("Peaks Selected from Plot:\n\n"
+             "Index\tLD\tLC\n")
 
         for key in sorted(detection_limits['clicked_selected'].keys()):
-            s += "{0}\t{1}\n".format(key, detection_limits['clicked_selected'][key])
-
+            s += "{0}\t{1}\t{2}\n".format(key, 
+                                    detection_limits['clicked_selected'][key][0],
+                                    detection_limits['clicked_selected'][key][1],
+                                    )
     return s
