@@ -66,15 +66,13 @@ class PyramdsView(HasTraits):
         }
 
     # UI Stuff
+    start_time_low = Float(0.0)
     start_time_high = Float(1.0)
     end_time_low = Float(0.0)
     end_time_high = Float(1.0)
 
-#    start_time = Range(low=0.0, high=1.0, value=0.0)
-#    end_time = Range(low=0.0, high=1.0, value=1.0)
-
-    start_time = Range(low=0.0, high=np.inf, value=0.0)
-    end_time = Range(low=0.0, high=np.inf, value=1.0)
+    start_time = Range(low=0.0, high=np.inf, value=9999.99)
+    end_time = Range(low=0.0, high=np.inf, value=99999.99)
 
     # Detection Limits 
     isotope_enum = List
@@ -120,8 +118,12 @@ class PyramdsView(HasTraits):
                 Item('save_figure', show_label=False),
             ),
             VGroup(
-                Item('start_time', editor=RangeEditor(low=0.0, high=1.0, high_name='start_time_high'), format_str='%.2F',  label="Start Time"),
-                Item('end_time', editor=RangeEditor(low=0.0, high=1.0, low_name='end_time_low', high_name='end_time_high'), format_str='%.2F', label="End Time"), 
+                Item('start_time', editor=RangeEditor(low=9999.99, high=99999.99, low_name='start_time_low', high_name='start_time_high', format='%.2F', mode='slider'), 
+                    format_str='%.2F',  
+                    label="Start Time"),
+                Item('end_time', editor=RangeEditor(low=9999.99, high=99999.99, low_name='end_time_low', high_name='end_time_high', format='%.2F', mode='slider'), 
+                    format_str='%.2F', 
+                    label="End Time"), 
             ),
         ),
         width=500, 
@@ -151,7 +153,7 @@ class PyramdsView(HasTraits):
 
     def get_total_time(self):
         if self.dfr == None:
-            dt = 1.0
+            dt = 99999.99
         else:
             dt = self.dfr.bin_data_parse.readout[-1]['timestamp'] - self.dfr.bin_data_parse.readout[0]['timestamp']
         return float(dt)
@@ -212,11 +214,14 @@ class PyramdsView(HasTraits):
         plot = make_spectrum_plot(self.chan, self.hist, self.pchn, self.peak)
         return plot
 
+    def _start_time_low_default(self):
+         return 9999.99
+
     def _start_time_high_default(self):
          return self.get_total_time()
 
     def _end_time_low_default(self):
-         return 0.0
+         return 9999.99
 
     def _end_time_high_default(self):
          return self.get_total_time()
@@ -258,6 +263,7 @@ class PyramdsView(HasTraits):
         self.load_histogram_data()
 
         # reset times
+        self.start_time_low = 0.0
         self.end_time_low = 0.0
         self.end_time_high = self.get_total_time()
         self.start_time_high = self.get_total_time()
