@@ -39,19 +39,19 @@ def make_spectrum_plot(chan, hist, pchn, peak, label="Spectrum Plot"):
     # Add the title at the top
     container.overlays.append(PlotLabel(label,
         component=container,
-        font = "Times 20",
+        font = "Roman 20",
         overlay_position="top")
         )
 
     # Set x-axis
     container.x_axis.title = "Energy (MeV)"
-    container.x_axis.title_font = "Times 16"
-    container.x_axis.tick_label_font = "Times 12"
+    container.x_axis.title_font = "Roman 16"
+    container.x_axis.tick_label_font = "Roman 12"
 
     # Set y-axis
     container.y_axis.title = "Counts"
-    container.y_axis.title_font = "Times 16"
-    container.y_axis.tick_label_font = "Times 12"
+    container.y_axis.title_font = "Roman 16"
+    container.y_axis.tick_label_font = "Roman 12"
 
     # Get Title Spacing right
     container.padding_left = 65
