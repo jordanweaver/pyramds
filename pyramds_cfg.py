@@ -2,7 +2,11 @@
 import numpy as np
 
 # path to data series (leave off run number and extension)
-file_series = '/python/PIXIE_runs/debug-' #EuCal/Eu152_92710-'
+#file_series = '/python/PIXIE_runs/debug-' #EuCal/Eu152_92710-'
+file_series = 'debug-' #EuCal/Eu152_92710-'
+
+#lib_name = '/python/PYRAMDS/sig_library.txt' 
+lib_name = 'sig_library.txt' 
 
 spec_user_input = {
     'type'      : [],   # 0-Normal, 1-Compton, 2-GG, 3-GG/Compton, 4-Specgram
@@ -51,8 +55,6 @@ for channel in range(3):
     fwhm_coeff[str(channel)] = map(float, fwhmfit[str(channel)].split())    
 
 # Supply the path to the custom signature library. Builds necessary lookup arrays
-
-lib_name = '/python/PYRAMDS/sig_library.txt' 
 
 with open(lib_name, 'r') as ginput:
     gamma_lib = {}
