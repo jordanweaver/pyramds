@@ -26,10 +26,10 @@ def calc_det_limit(LM, RM, spec_array):
     
     return el_c, el_d
 
-def calc_det_limit_sel(chn, marker, spec_array):
+def calc_det_limit_sel(chn, marker, en_coeff, fwhm_coeff, spec_array):
     
-    cent_en = en_coeff[chn][0] + en_coeff[chn][1] * marker
-    width = fwhm_coeff[chn][0] + fwhm_coeff[chn][1] * marker + fwhm_coeff[chn][2] * marker * marker
+    cent_en = en_coeff[0] + en_coeff[1] * marker
+    width = fwhm_coeff[0] + fwhm_coeff[1] * marker + fwhm_coeff[2] * marker * marker
     
     left_marker = int(round(cent_en - 1.75*width))
     right_marker = int(round(cent_en + 1.75*width))

@@ -314,6 +314,11 @@ class SigFields(IsDescription):
 
 gSig = h5file.createGroup(h5file.root, "sig_lookup", "Sig Library info")
 
+h5file.createArray(gSig, "en_coeff_1", en_coeff['1'], "Energy coefficients for Det 1")
+h5file.createArray(gSig, "en_coeff_2", en_coeff['2'], "Energy coefficients for Det 2")
+h5file.createArray(gSig, "fwhm_coeff_1", fwhm_coeff['1'], "FWHM coefficients for Det 1")
+h5file.createArray(gSig, "fwhm_coeff_2", fwhm_coeff['2'], "FWHM coefficients for Det 2")
+
 # Create table for det 1 sig markers
 sigTable = h5file.createTable(gSig, "det1_sig", SigFields, "Sig Markers for Det 1")
 sigitem = sigTable.row
