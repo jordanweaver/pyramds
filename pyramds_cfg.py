@@ -4,6 +4,7 @@ import numpy as np
 # path to data series (leave off run number and extension)
 #file_series = '/python/PIXIE_runs/debug-' #EuCal/Eu152_92710-'
 file_series = 'debug-' #EuCal/Eu152_92710-'
+#file_series = '/python/PIXIE_runs/EuCal/Eu152_92710-'
 
 #lib_name = '/python/PYRAMDS/sig_library.txt' 
 lib_name = 'sig_library.txt' 
