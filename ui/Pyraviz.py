@@ -39,10 +39,15 @@ class PyramdsView(HasTraits):
     datafile = Any()
     dfr      = Any()
 
+    # Signal Lookup
+    sig_lookup = Dict({
+        "1": {}, 
+        "2": {}, 
+        })
+
     # Save Information
     save_directory = Directory(".")
     save_figure = Button(label="Save Figure")
-
 
     # plot data
     chan = Array
@@ -177,6 +182,21 @@ class PyramdsView(HasTraits):
         self.pchn = pchn
         self.peak = peak
 
+    def load_sig_lookup(self):
+        sig_lookup = {"1": {}, "2": {}}
+
+        for n in ["1", "2"]:
+            sig_table = getattr(self.dfr.sig_lookup, "det{0}_sig".format(n))
+            # init isolists
+            for row in sig_table:
+                sig_lookup[n][row['name']] = []
+
+            # Add data
+            for row in sig_table:
+                sig_lookup[n][row['name']].append( (row['LM'], row['RM']) )
+
+        self.sig_lookup = sig_lookup
+
     def calc_histogram_data(self):
         hist_set = self.get_histogram_data_set()
         len_set = len(hist_set)
@@ -309,6 +329,7 @@ class PyramdsView(HasTraits):
         self.dfr = self.datafile.root
 
         self.load_histogram_data()
+        self.load_sig_lookup()
 
         # reset times
         self.start_time_low = 0.0
