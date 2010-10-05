@@ -22,7 +22,7 @@ from enthought.enable.api import Component, ComponentEditor, Window
 from enthought.chaco.tools.api import PanTool, ZoomTool, LegendTool, TraitsTool, DragZoom
 
 from spectrum_plot_view import make_spectrum_plot, save_plot
-from detection_limits_helpers import detection_limits_to_html
+from detection_limits_helpers import detection_limits_to_html, detection_limits_to_tsv
 
 np = numpy
 tb = tables
@@ -97,6 +97,7 @@ class PyramdsView(HasTraits):
 
     save_detection_limits = Button(label="Save Detection Limits")
 
+    # Traits view
     traits_view = View(
         VGroup(
             Group(Item('filename', label="Data File")),
@@ -416,6 +417,12 @@ class PyramdsView(HasTraits):
         h = 600
         savefile = "{0}/{1}{2}_Spectrum.png".format(self.save_directory, self.spectrum, self.detector)
         save_plot(self.plot, savefile, w, h)
+
+    def _save_detection_limits_fired(self):
+        tsv = detection_limits_to_tsv(self.detection_limits)
+        savefile = "{0}/{1}{2}_Detection_Limits.txt".format(self.save_directory, self.spectrum, self.detector)
+        with open(savefile, 'w') as f:
+            f.write(tsv)
 
 if __name__ == "__main__":
     pv = PyramdsView()
