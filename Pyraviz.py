@@ -24,6 +24,8 @@ from enthought.chaco.tools.api import PanTool, ZoomTool, LegendTool, TraitsTool,
 from spectrum_plot_view import make_spectrum_plot, save_plot
 from detection_limits_helpers import detection_limits_to_html, detection_limits_to_tsv
 
+from function_lib import calc_det_limit, calc_det_limit_sel
+
 np = numpy
 tb = tables
 
@@ -93,7 +95,7 @@ class PyramdsView(HasTraits):
     del_peak = Button(label="Remove Peak")
 
     detection_limits = Dict({
-        'lookup_selected': {},
+        'lookup_selected': [],
         'clicked_selected': {},
         })
 
@@ -441,7 +443,8 @@ class PyramdsView(HasTraits):
         # Calculate detection limits
         for si in self.index_selections:
             if si not in self.detection_limits['clicked_selected']:
-                self.detection_limits['clicked_selected'][si] = 0.5
+                ld, lc = calc_det_limit_sel(self.detector, si, self.hist)
+                self.detection_limits['clicked_selected'][si] = [ld, lc]
 
         # Remove old detection limits
         for key in self.detection_limits['clicked_selected'].keys():
@@ -454,6 +457,14 @@ class PyramdsView(HasTraits):
     #
     # Buttons Fired methods
     #
+
+    def _add_peak_fired(self):
+        markers = self.sig_lookup[self.detector][self.isotope][int(self.peaknum)-1]
+        ld, lc = calc_det_limit(markers[0], markers[1], self.hist)
+
+        row = [self.isotope, self.peaknum, ld, lc]
+
+        self.detection_limits['lookup_selected'].append(row)
 
     def _save_figure_fired(self):
         w = 800
