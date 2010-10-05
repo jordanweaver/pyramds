@@ -39,10 +39,15 @@ class PyramdsView(HasTraits):
     datafile = Any()
     dfr      = Any()
 
+    # Signal Lookup
+    sig_lookup = Dict({
+        "1": {}, 
+        "2": {}, 
+        })
+
     # Save Information
     save_directory = Directory(".")
     save_figure = Button(label="Save Figure")
-
 
     # plot data
     chan = Array
@@ -177,6 +182,21 @@ class PyramdsView(HasTraits):
         self.pchn = pchn
         self.peak = peak
 
+    def load_sig_lookup(self):
+        sig_lookup = {"1": {}, "2": {}}
+
+        for n in ["1", "2"]:
+            sig_table = getattr(self.dfr.sig_lookup, "det{0}_sig".format(n))
+            # init isolists
+            for row in sig_table:
+                sig_lookup[n][row['name']] = []
+
+            # Add data
+            for row in sig_table:
+                sig_lookup[n][row['name']].append( (row['LM'], row['RM']) )
+
+        self.sig_lookup = sig_lookup
+
     def calc_histogram_data(self):
         hist_set = self.get_histogram_data_set()
         len_set = len(hist_set)
@@ -218,6 +238,18 @@ class PyramdsView(HasTraits):
     def draw_detection_limits(self):
         detection_limits_html = detection_limits_to_html(self.detection_limits)
         self.detection_limits_html = detection_limits_html
+
+    def reset_isotope(self):
+        isotope_enum = sorted(self.sig_lookup[self.detector].keys())
+        isotope = isotope_enum[0]
+        self.isotope_enum = isotope_enum
+        self.isotope = isotope
+
+    def reset_peaknum(self):
+        peaknum_enum = [str(i) for i in range(1, len(self.sig_lookup[self.detector][self.isotope]) + 1)]
+        peaknum = peaknum_enum[0]
+        self.peaknum_enum = peaknum_enum
+        self.peaknum = peaknum
 
     #
     # Set Trait Defaults
@@ -321,6 +353,11 @@ class PyramdsView(HasTraits):
         # Redraw plot
         self.draw_plot()
 
+        # Load signal lookup and add to drop-downs
+        self.load_sig_lookup()
+        self.reset_isotope()
+        self.reset_peaknum()
+
     def _start_time_changed(self, old, new):
         self.end_time_low = new
 
@@ -351,9 +388,15 @@ class PyramdsView(HasTraits):
         # Redraw points on plot
         self.redraw_plot()
 
+    def _isotope_changed(self):
+        self.reset_peaknum()
+
     def _detector_changed(self):
         self.load_histogram_data()
         self.draw_plot()
+
+        self.reset_isotope()
+        self.reset_peaknum()
 
     def _spectrum_changed(self):
         self.load_histogram_data()
