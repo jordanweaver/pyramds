@@ -2,7 +2,7 @@
 
 # Definitions of all custom functions to be used by PYRAMDS
 
-def calc_det_limit(chn, zaid, spec_array):
+def calc_det_limit(LM, RM, spec_array):
     """
     Calculates detection limits by first averaging counts about left/right
     markers and then using that to determine average counts per channel in
@@ -12,8 +12,6 @@ def calc_det_limit(chn, zaid, spec_array):
     """
     
     avg_pm = 3
-    LM = sig_lookup[chn][zaid][0]
-    RM = sig_lookup[chn][zaid][1]
     N_chn = (LM - RM) + 1
     LM_avg = np.average(spec_array[(LM - avg_pm):(LM + avg_pm + 1)])
     RM_avg = np.average(spec_array[(RM - avg_pm):(RM + avg_pm + 1)])
@@ -26,6 +24,16 @@ def calc_det_limit(chn, zaid, spec_array):
     
     return el_c, el_d
 
+def calc_det_limit_sel(chn, marker, spec_array):
+    
+    cent_en = en_coeff[chn][0] + en_coeff[chn][1] * marker
+    width = fwhm_coeff[chn][0] + fwhm_coeff[chn][1] * marker + fwhm_coeff[chn][2] * marker * marker
+    
+    left_marker = int(round(cent_en - 1.75*width))
+    right_marker = int(round(cent_en + 1.75*width))
+
+    return calc_det_limit(left_marker, right_marker, spec_array)
+    
 def bin_count(t_start, t_stop, group):
     
     cnt_array = np.zeros( (energy_max + 1), dtype=np.int32)
