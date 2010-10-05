@@ -76,21 +76,26 @@ class PyramdsView(HasTraits):
 
 
     # Detection Limits 
+    detection_limits_title = Str("Detection Limits")
+
     isotope_enum = List
     peaknum_enum = List
 
     isotope = Str
     peaknum = Str
 
-    detection_limits_html = HTML
-    save_detection_limits = Button(label="Save Detection Limits")
+    add_peak = Button(label="Add Peak")
+    del_peak = Button(label="Remove Peak")
 
     detection_limits = Dict({
         'lookup_selected': {},
         'clicked_selected': {},
         })
 
-    detection_limits_title = Str("Detection Limits")
+
+    detection_limits_html = HTML
+
+    save_detection_limits = Button(label="Save Detection Limits")
 
     traits_view = View(
         VGroup(
@@ -102,6 +107,10 @@ class PyramdsView(HasTraits):
                     VGroup(
                         Item('isotope', editor=EnumEditor(name='isotope_enum'), label="Isotope"),
                         Item('peaknum', editor=EnumEditor(name='peaknum_enum'), label="Peak No.")
+                    ),
+                    HGroup(
+                        Item('add_peak', show_label=False, width=0.5),
+                        Item('del_peak', show_label=False, width=0.5),
                     ),
                     Item('detection_limits_html', editor=HTMLEditor(), show_label=False),
                     Item('save_detection_limits', show_label=False),
