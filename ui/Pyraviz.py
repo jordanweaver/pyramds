@@ -239,6 +239,18 @@ class PyramdsView(HasTraits):
         detection_limits_html = detection_limits_to_html(self.detection_limits)
         self.detection_limits_html = detection_limits_html
 
+    def reset_isotope(self):
+        isotope_enum = sorted(self.sig_lookup[self.detector].keys())
+        isotope = isotope_enum[0]
+        self.isotope_enum = isotope_enum
+        self.isotope = isotope
+
+    def reset_peaknum(self):
+        peaknum_enum = [str(i) for i in range(1, len(self.sig_lookup[self.detector][self.isotope]) + 1)]
+        peaknum = peaknum_enum[0]
+        self.peaknum_enum = peaknum_enum
+        self.peaknum = peaknum
+
     #
     # Set Trait Defaults
     #
@@ -329,7 +341,6 @@ class PyramdsView(HasTraits):
         self.dfr = self.datafile.root
 
         self.load_histogram_data()
-        self.load_sig_lookup()
 
         # reset times
         self.start_time_low = 0.0
@@ -341,6 +352,11 @@ class PyramdsView(HasTraits):
 
         # Redraw plot
         self.draw_plot()
+
+        # Load signal lookup and add to drop-downs
+        self.load_sig_lookup()
+        self.reset_isotope()
+        self.reset_peaknum()
 
     def _start_time_changed(self, old, new):
         self.end_time_low = new
@@ -372,9 +388,15 @@ class PyramdsView(HasTraits):
         # Redraw points on plot
         self.redraw_plot()
 
+    def _isotope_changed(self):
+        self.reset_peaknum()
+
     def _detector_changed(self):
         self.load_histogram_data()
         self.draw_plot()
+
+        self.reset_isotope()
+        self.reset_peaknum()
 
     def _spectrum_changed(self):
         self.load_histogram_data()
