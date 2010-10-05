@@ -312,7 +312,7 @@ class SigFields(IsDescription):
     RM      = Int16Col(pos=2)
     energy  = Float32Col(pos=3)
 
-gSig = h5file.createGroup(h5file.root.spectra, "sig_lookup", "Sig Library info")
+gSig = h5file.createGroup(h5file.root, "sig_lookup", "Sig Library info")
 
 # Create table for det 1 sig markers
 sigTable = h5file.createTable(gSig, "det1_sig", SigFields, "Sig Markers for Det 1")
