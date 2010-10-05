@@ -14,8 +14,16 @@ def make_spectrum_plot(chan, hist, pchn, peak, en_coeff, label="Spectrum Plot", 
         overlay_border=True,
         )
 
-    scatter_plot = container.plot(("x", "y"), type="scatter", color="black")[0]
-    container.plot(("x2", "y2"), type="scatter", color="red")
+    scatter_plot = container.plot(("x", "y"), 
+                                    type="scatter", 
+                                    color="black",
+                                    marker_size=1,
+                                    )[0]
+    container.plot(("x2", "y2"), 
+                    type="scatter", 
+                    marker_size=1,
+                    color="red",
+                    )
 
     # Add nice zooming and Panning
     container.tools.append(PanTool(container))
@@ -30,11 +38,12 @@ def make_spectrum_plot(chan, hist, pchn, peak, en_coeff, label="Spectrum Plot", 
     scatter_plot.tools.append(ScatterInspector(scatter_plot))
     scatter_overlay = ScatterInspectorOverlay(scatter_plot, 
         hover_color="yellow", 
-        hover_marker_size=6,
-        selection_marker_size=6,
+        hover_marker_size=1,
+        selection_marker_size=1,
         selection_color="limegreen",
         selection_outline_color="black",
-        selection_line_width=1
+        hover_line_width=1,
+        selection_line_width=1,
         )
     scatter_plot.overlays.append(scatter_overlay)
 

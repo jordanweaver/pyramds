@@ -134,13 +134,13 @@ class PyramdsView(HasTraits):
                 Item('detector'), 
                 spring,
                 Item('spectrum'), 
+                spring,
+                Item('linlog_toggle', show_label=False),
             ),
             HGroup(
                 Item('save_directory', width=400, label="Save Dir"),
                 spring,
                 Item('save_figure', show_label=False),
-                spring,
-                Item('linlog_toggle', show_label=False),
             ),
             VGroup(
                 Item('start_time', 
