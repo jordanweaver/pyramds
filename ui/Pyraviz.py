@@ -9,10 +9,10 @@ import scipy
 
 # ETS imports
 from enthought.traits.api import HasTraits, Instance, Str, Enum, Any, List, Array, Dict, Button, NO_COMPARE, Float, \
-    File, Directory, on_trait_change, HTML
+    File, Directory, on_trait_change, HTML, Range
 
 from enthought.traits.ui.api import View, Item, Group, VGroup, HGroup, EnumEditor, TableEditor, TabularEditor, spring, Spring, \
-    HTMLEditor, HSplit, VSplit, VGrid
+    HTMLEditor, HSplit, VSplit, VGrid, RangeEditor
 from enthought.traits.ui.ui_editors.array_view_editor import ArrayViewEditor
 from enthought.traits.ui.menu import Action
 
@@ -66,8 +66,13 @@ class PyramdsView(HasTraits):
         }
 
     # UI Stuff
-    start_time = Float
-    end_time = Float
+    start_time_low = Float(0.0)
+    start_time_high = Float(1.0)
+    end_time_low = Float(0.0)
+    end_time_high = Float(1.0)
+
+    start_time = Range(low=0.0, high=np.inf, value=9999.99)
+    end_time = Range(low=0.0, high=np.inf, value=99999.99)
 
     # Detection Limits 
     isotope_enum = List
@@ -106,15 +111,19 @@ class PyramdsView(HasTraits):
                 Item('detector'), 
                 spring,
                 Item('spectrum'), 
-                spring,
-                Item('start_time', format_str='%.2F',  label="Start Time"),
-                spring,
-                Item('end_time', format_str='%.2F', label="End Time"), 
             ),
             HGroup(
                 Item('save_directory', width=400, label="Save Dir"),
                 spring,
                 Item('save_figure', show_label=False),
+            ),
+            VGroup(
+                Item('start_time', editor=RangeEditor(low=9999.99, high=99999.99, low_name='start_time_low', high_name='start_time_high', format='%.2F', mode='slider'), 
+                    format_str='%.2F',  
+                    label="Start Time"),
+                Item('end_time', editor=RangeEditor(low=9999.99, high=99999.99, low_name='end_time_low', high_name='end_time_high', format='%.2F', mode='slider'), 
+                    format_str='%.2F', 
+                    label="End Time"), 
             ),
         ),
         width=500, 
@@ -123,7 +132,7 @@ class PyramdsView(HasTraits):
         title="Pyramds Visualizer",
         )
 
-    def get_historgam_data_set(self):
+    def get_histogram_data_set(self):
         hist_grp = getattr(self.dfr.spectra, self.spectrum_group_names[self.spectrum])
         hist_set = getattr(hist_grp, "{0}{1}_spec".format(self.spectrum_set_names[self.spectrum], self.detector))
         return hist_set
@@ -142,6 +151,12 @@ class PyramdsView(HasTraits):
         self.pchn = pchn
         self.peak = peak
 
+    def get_total_time(self):
+        if self.dfr == None:
+            dt = 99999.99
+        else:
+            dt = self.dfr.bin_data_parse.readout[-1]['timestamp'] - self.dfr.bin_data_parse.readout[0]['timestamp']
+        return float(dt)
 
     def draw_plot(self):
         label = "Detector {0} {1} Spectrum".format(self.detector, self.spectrum)
@@ -199,14 +214,17 @@ class PyramdsView(HasTraits):
         plot = make_spectrum_plot(self.chan, self.hist, self.pchn, self.peak)
         return plot
 
-    def _start_time_default(self):
-        return 0.0
+    def _start_time_low_default(self):
+         return 9999.99
 
-    def _end_time_default(self):
-        if self.dfr == None:
-            return 0.0
-        else:
-            return self.dfr.bin_data_parse.readout[-1]['timestamp'] - self.dfr.bin_data_parse.readout[0]['timestamp']
+    def _start_time_high_default(self):
+         return self.get_total_time()
+
+    def _end_time_low_default(self):
+         return 9999.99
+
+    def _end_time_high_default(self):
+         return self.get_total_time()
 
     def _detector_default(self):
         return "1"
@@ -244,10 +262,22 @@ class PyramdsView(HasTraits):
 
         self.load_histogram_data()
 
+        # reset times
+        self.start_time_low = 0.0
+        self.end_time_low = 0.0
+        self.end_time_high = self.get_total_time()
+        self.start_time_high = self.get_total_time()
         self.start_time = 0.0
-        self.end_time = self.dfr.bin_data_parse.readout[-1]['timestamp'] - self.dfr.bin_data_parse.readout[0]['timestamp']
+        self.end_time = self.get_total_time()
 
+        # Redraw plot
         self.draw_plot()
+
+    def _start_time_changed(self, old, new):
+        self.end_time_low = new
+
+    def _end_time_changed(self, old, new):
+        self.start_time_high = new
 
     def _detector_changed(self):
         self.load_histogram_data()
