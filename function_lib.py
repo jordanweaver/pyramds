@@ -46,3 +46,7 @@ def bin_count(t_start, t_stop, group):
         cnt_array[chan] = counts
 
     return cnt_array
+
+def marker2energy(marker, en_coeff):
+    energy = en_coeff[0] + en_coeff[1] * marker
+    return energy
