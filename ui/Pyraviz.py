@@ -321,6 +321,7 @@ class PyramdsView(HasTraits):
         # Recalculate peak
         if 0 < len(self.pchn):
             peak = self.hist[self.pchn]
+            self.peak = peak
 
         # Redraw points on plot
         self.redraw_plot()
@@ -335,6 +336,7 @@ class PyramdsView(HasTraits):
         # Recalculate peak
         if 0 < len(self.pchn):
             peak = self.hist[self.pchn]
+            self.peak = peak
 
         # Redraw points on plot
         self.redraw_plot()

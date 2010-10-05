@@ -30,7 +30,7 @@ def make_spectrum_plot(chan, hist, pchn, peak, label="Spectrum Plot"):
         hover_color="yellow", 
         hover_marker_size=6,
         selection_marker_size=6,
-        selection_color="yellow",
+        selection_color="limegreen",
         selection_outline_color="black",
         selection_line_width=1
         )
