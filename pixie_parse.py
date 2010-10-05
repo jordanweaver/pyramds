@@ -59,13 +59,13 @@ class GammaEvent(IsDescription):
     timestamp   = Float32Col(pos=6)
     
 class AggEvent1(IsDescription):
-    energy    = Int16Col(pos=1)
-    timestamp   = Float32Col(pos=6)
+    energy    = Int16Col(pos=0)
+    timestamp = Float32Col(pos=1)
     
 class AggEvent2(IsDescription):
-    energy_1    = Int16Col(pos=1)
-    energy_2    = Int16Col(pos=2)
-    timestamp   = Float32Col(pos=6)
+    energy_1    = Int16Col(pos=0)
+    energy_2    = Int16Col(pos=1)
+    timestamp   = Float32Col(pos=2)
 
 h5file = openFile(file_series + '.h5', mode = 'w', title = 'Data - ' + file_series)
 group = h5file.createGroup(h5file.root, 'bin_data_parse', 'PIXIE Binary Parse')
@@ -301,5 +301,41 @@ for row in gg12table:
 dt_array[-1] = dt_temp.copy()
 
 h5file.createArray(gGGcoinc, 'gg2_spec', dt_array, "G-G Time-Chunked Spec Array - Det 2")
+
+################################################################################
+# Create sig_lookup strucutre in HDF5 file######################################
+################################################################################
+
+class SigFields(IsDescription):
+    name    = StringCol(8,pos=0)
+    LM      = Int16Col(pos=1)
+    RM      = Int16Col(pos=2)
+    energy  = Float32Col(pos=3)
+
+gSig = h5file.createGroup(h5file.root.spectra, "sig_lookup", "Sig Library info")
+
+# Create table for det 1 sig markers
+sigTable = h5file.createTable(gSig, "det1_sig", SigFields, "Sig Markers for Det 1")
+sigitem = sigTable.row
+
+for x in sig_lookup[1].keys():
+    sigitem['name'] = gamma_lib[x][0]
+    sigitem['LM'] = sig_lookup[1][x][0]
+    sigitem['RM'] = sig_lookup[1][x][1]
+    sigitem['energy'] = gamma_lib[x][1]
+    sigitem.append()
+    sigTable.flush()
+    
+# Create table for det 2 sig markers
+sigTable = h5file.createTable(gSig, "det2_sig", SigFields, "Sig Markers for Det 2")
+sigitem = sigTable.row
+
+for x in sig_lookup[2].keys():
+    sigitem['name'] = gamma_lib[x][0]
+    sigitem['LM'] = sig_lookup[2][x][0]
+    sigitem['RM'] = sig_lookup[2][x][1]
+    sigitem['energy'] = gamma_lib[x][1]
+    sigitem.append()
+    sigTable.flush()
     
 h5file.close()

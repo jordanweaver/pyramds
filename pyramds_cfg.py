@@ -2,7 +2,7 @@
 import numpy as np
 
 # path to data series (leave off run number and extension)
-file_series = '/python/PIXIE_runs/EuCal/Eu152_92710-'
+file_series = '/python/PIXIE_runs/debug-'
 
 spec_user_input = {
     'type'      : [],   # 0-Normal, 1-Compton, 2-GG, 3-GG/Compton, 4-Specgram
@@ -67,7 +67,7 @@ with open(lib_name, 'r') as ginput:
         
         line_data = ginput.readline().split()
     
-    sig_lookup = [{}]*4
+    sig_lookup = [{}]*3
     for c,chn in enumerate(en_coeff.keys()):
         for z,zaid in enumerate(gamma_lib.keys()):
             top_val = gamma_lib[zaid][1] - en_coeff[chn][0]
@@ -79,7 +79,7 @@ with open(lib_name, 'r') as ginput:
             right_marker = int(round(cent_chn + 1.75*width))
             
             sig_lookup[int(chn)][zaid] = [left_marker, right_marker]
-
+   
 # Detector system variables
 energy_max = 8192 # maximum number of bins (energies) to be stored for detectors
 tunits = 1000./75. # 13.3333... nanoseconds (for PIXIE timing)
