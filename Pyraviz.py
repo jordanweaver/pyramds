@@ -52,10 +52,10 @@ class PyramdsView(HasTraits):
     save_figure = Button(label="Save Figure")
 
     # plot data
-    chan = Array
-    hist = Array
-    pchn = Array
-    peak = Array
+    chan = Array(dtype=int)
+    hist = Array(dtype=int)
+    pchn = Array(dtype=int)
+    peak = Array(dtype=int)
 
     title = Str("")
 
@@ -462,10 +462,55 @@ class PyramdsView(HasTraits):
         markers = self.sig_lookup[self.detector][self.isotope][int(self.peaknum)-1]
         ld, lc = calc_det_limit(markers[0], markers[1], self.hist)
 
+        # Set detection limits
         row = [self.isotope, self.peaknum, ld, lc]
-
         self.detection_limits['lookup_selected'].append(row)
 
+        # Redraw the detection limits display
+        self.draw_detection_limits()
+
+        # Add peak to plot
+        new_pchn = np.arange(markers[0], markers[1] + 1, dtype=int)
+        pchn = np.append(self.pchn, new_pchn)
+        peak = self.hist[pchn]
+
+        self.pchn = pchn
+        self.peak = peak
+
+        # Redraw the plot
+        self.redraw_peak_plot()        
+
+    def _del_peak_fired(self):
+        del_index = None
+        for n in range(len(self.detection_limits['lookup_selected'])):
+            row = self.detection_limits['lookup_selected'][n]
+            if (row[0] == self.isotope) and (row[1] == self.peaknum):
+                del_index = n
+                break
+
+        if del_index != None:
+            del self.detection_limits['lookup_selected'][del_index]
+
+            # Redraw the detection limits display
+            self.draw_detection_limits()
+
+            # remove peak from plot
+            markers = self.sig_lookup[self.detector][self.isotope][int(self.peaknum)-1]
+            rm_chn = np.arange(markers[0], markers[1] + 1, dtype=int)
+            new_pchn = np.array([chn for chn in self.pchn if chn not in rm_chn], dtype=int)
+            if 0 < len(new_pchn):
+                peak = self.hist[new_pchn]
+            else:
+                peak = np.array([])
+
+            self.pchn = new_pchn
+            self.peak = peak
+
+            # Redraw the plot
+            self.redraw_peak_plot()
+
+
+    
     def _save_figure_fired(self):
         w = 800
         h = 600
