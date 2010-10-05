@@ -46,6 +46,10 @@ class PyramdsView(HasTraits):
         "1": {}, 
         "2": {}, 
         })
+    en_coeff_1 = Array(dtype=float)
+    en_coeff_2 = Array(dtype=float)
+    fwhm_coeff_1 = Array(dtype=float)
+    fwhm_coeff_2 = Array(dtype=float)
 
     # Save Information
     save_directory = Directory(".")
@@ -58,6 +62,7 @@ class PyramdsView(HasTraits):
     peak = Array(dtype=int)
 
     title = Str("")
+    linlog_toggle = Enum(["Linear", "Log"])
 
     detector = Enum(["1", "2"])
     spectrum = Enum(["Normal", "Compton", "Gamma-Gamma"])
@@ -134,6 +139,8 @@ class PyramdsView(HasTraits):
                 Item('save_directory', width=400, label="Save Dir"),
                 spring,
                 Item('save_figure', show_label=False),
+                spring,
+                Item('linlog_toggle', show_label=False),
             ),
             VGroup(
                 Item('start_time', 
@@ -199,6 +206,12 @@ class PyramdsView(HasTraits):
 
         self.sig_lookup = sig_lookup
 
+        self.en_coeff_1 = self.dfr.sig_lookup.en_coeff_1.read()
+        self.en_coeff_2 = self.dfr.sig_lookup.en_coeff_2.read()
+        self.fwhm_coeff_1 = self.dfr.sig_lookup.fwhm_coeff_1.read()
+        self.fwhm_coeff_2 = self.dfr.sig_lookup.fwhm_coeff_2.read()
+
+
     def calc_histogram_data(self):
         hist_set = self.get_histogram_data_set()
         len_set = len(hist_set)
@@ -252,6 +265,19 @@ class PyramdsView(HasTraits):
         peaknum = peaknum_enum[0]
         self.peaknum_enum = peaknum_enum
         self.peaknum = peaknum
+
+    def time_changed(self):
+        # Calculate new hisogram
+        hist = self.calc_histogram_data()
+        self.hist = hist
+
+        # Recalculate peak
+        if 0 < len(self.pchn):
+            peak = self.hist[self.pchn]
+            self.peak = peak
+
+        # Redraw points on plot
+        self.redraw_plot()
 
     #
     # Set Trait Defaults
@@ -362,33 +388,11 @@ class PyramdsView(HasTraits):
 
     def _start_time_changed(self, old, new):
         self.end_time_low = new
-
-        # Calculate new hisogram
-        hist = self.calc_histogram_data()
-        self.hist = hist
-
-        # Recalculate peak
-        if 0 < len(self.pchn):
-            peak = self.hist[self.pchn]
-            self.peak = peak
-
-        # Redraw points on plot
-        self.redraw_plot()
+        self.time_changed()
 
     def _end_time_changed(self, old, new):
         self.start_time_high = new
-
-        # Calculate new hisogram
-        hist = self.calc_histogram_data()
-        self.hist = hist
-
-        # Recalculate peak
-        if 0 < len(self.pchn):
-            peak = self.hist[self.pchn]
-            self.peak = peak
-
-        # Redraw points on plot
-        self.redraw_plot()
+        self.time_changed()
 
     def _isotope_changed(self):
         self.reset_peaknum()
@@ -403,6 +407,13 @@ class PyramdsView(HasTraits):
     def _spectrum_changed(self):
         self.load_histogram_data()
         self.draw_plot()
+
+    def _linlog_toggle_changed(self, old, new):
+        if new == "Log":
+            self.plot.value_scale = 'log'
+
+        if new == "Linear":
+            self.plot.value_scale = 'linear'
 
     def _plot_changed(self):
         self.plot.plots['plot0'][0].index.on_trait_change(self._index_metadata_handler, 'metadata_changed')
@@ -443,7 +454,9 @@ class PyramdsView(HasTraits):
         # Calculate detection limits
         for si in self.index_selections:
             if si not in self.detection_limits['clicked_selected']:
-                ld, lc = calc_det_limit_sel(self.detector, si, self.hist)
+                en_coeff = getattr(self, "en_coeff_{0}".format(self.detector))
+                fwhm_coeff = getattr(self, "fwhm_coeff_{0}".format(self.detector))
+                ld, lc = calc_det_limit_sel(self.detector, si, en_coeff, fwhm_coeff, self.hist)
                 self.detection_limits['clicked_selected'][si] = [ld, lc]
 
         # Remove old detection limits
