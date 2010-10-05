@@ -235,7 +235,8 @@ class PyramdsView(HasTraits):
 
     def draw_plot(self):
         label = "Detector {0} {1} Spectrum".format(self.detector, self.spectrum)
-        plot = make_spectrum_plot(self.chan, self.hist, self.pchn, self.peak, label)
+        en_coeff = getattr(self, "en_coeff_{0}".format(self.detector))
+        plot = make_spectrum_plot(self.chan, self.hist, self.pchn, self.peak, en_coeff, label, self.linlog_toggle)
         self.plot = plot
 
     def redraw_hist_plot(self):
@@ -319,7 +320,8 @@ class PyramdsView(HasTraits):
         return np.array([])
 
     def _plot_default(self):
-        plot = make_spectrum_plot(self.chan, self.hist, self.pchn, self.peak)
+        en_coeff = getattr(self, "en_coeff_{0}".format(self.detector))
+        plot = make_spectrum_plot(self.chan, self.hist, self.pchn, self.peak, en_coeff, scale=self.linlog_toggle)
         return plot
 
     def _start_time_low_default(self):
@@ -355,6 +357,18 @@ class PyramdsView(HasTraits):
     def _detection_limits_html_default(self):
         return "<b>No peaks selected.</b>"
 
+    def _en_coeff_1_default(self):
+        return np.array([0.0, 1.0], dtype=float)
+
+    def _en_coeff_2_default(self):
+        return np.array([0.0, 1.0], dtype=float)
+
+    def _fwhm_coeff_1_default(self):
+        return np.array([1.0, 1.0, 1.0], dtype=float)
+
+    def _fwhm_coeff_2_default(self):
+        return np.array([1.0, 1.0, 1.0], dtype=float)
+
     #
     # Define Traits Changed
     #
@@ -378,13 +392,14 @@ class PyramdsView(HasTraits):
         self.start_time = 0.0
         self.end_time = self.get_total_time()
 
-        # Redraw plot
-        self.draw_plot()
-
         # Load signal lookup and add to drop-downs
         self.load_sig_lookup()
         self.reset_isotope()
         self.reset_peaknum()
+
+        # Redraw plot
+        self.draw_plot()
+
 
     def _start_time_changed(self, old, new):
         self.end_time_low = new

@@ -3,7 +3,9 @@ from enthought.chaco.tools.api import PanTool, ZoomTool, LegendTool, TraitsTool,
 
 from enthought.chaco.plot_graphics_context import PlotGraphicsContext
 
-def make_spectrum_plot(chan, hist, pchn, peak, label="Spectrum Plot"):
+from function_lib import marker2energy
+
+def make_spectrum_plot(chan, hist, pchn, peak, en_coeff, label="Spectrum Plot", scale="Linear"):
     plotdata = ArrayPlotData(x=chan, y=hist, x2=pchn, y2=peak)
 
     container = Plot(
@@ -44,9 +46,11 @@ def make_spectrum_plot(chan, hist, pchn, peak, label="Spectrum Plot"):
         )
 
     # Set x-axis
-    container.x_axis.title = "Energy (MeV)"
+    container.x_axis.title = "Energy (keV)"
     container.x_axis.title_font = "Roman 16"
     container.x_axis.tick_label_font = "Roman 12"
+
+    container.x_axis.tick_label_formatter = lambda x: "{0:.2f}".format(marker2energy(x, en_coeff))
 
     # Set y-axis
     container.y_axis.title = "Counts"
@@ -55,6 +59,12 @@ def make_spectrum_plot(chan, hist, pchn, peak, label="Spectrum Plot"):
 
     # Get Title Spacing right
     container.padding_left = 65
+
+    # Set scale
+    if scale == "Linear":
+        container.value_scale = 'linear'
+    if scale == "Log":
+        container.value_scale = 'log'
 
     return container
 
