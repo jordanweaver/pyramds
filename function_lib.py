@@ -14,7 +14,7 @@ def calc_det_limit(LM, RM, spec_array):
     """
     
     avg_pm = 3
-    N_chn = (LM - RM) + 1
+    N_chn = abs(RM - LM) + 1
     LM_avg = np.average(spec_array[(LM - avg_pm):(LM + avg_pm + 1)])
     RM_avg = np.average(spec_array[(RM - avg_pm):(RM + avg_pm + 1)])
     
