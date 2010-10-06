@@ -149,7 +149,7 @@ while os.path.exists(file_path + '.bin'):
         
             buffer_no += 1
             if buffer_no%100 == 0:
-                print('\rBuffer No. {0}'.format(buffer_no))
+                print('\bBuffer No. {0}'.format(buffer_no))
             
             # Flush data to the HFD5 table and start new buffer    
             table.flush()
