@@ -227,10 +227,7 @@ class PyramdsView(HasTraits):
             upper_index = upper_index - 1
 
         # Calculate histogram
-        if lower_index == upper_index:
-            hist = hist_set[upper_index]
-        else:
-            hist = hist_set[upper_index] - hist_set[lower_index]
+        hist = hist_set[upper_index] - hist_set[lower_index]
         return hist
 
     def draw_plot(self):
