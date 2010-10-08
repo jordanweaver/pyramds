@@ -7,7 +7,6 @@
 
 import struct
 import time
-import datetime
 import os
 import numpy as np
 import math
@@ -16,32 +15,14 @@ from tables import *
 # pyramds_cfg contains user-supplied info on detector systems and which data
 # files are to be used in the analysis
 from pyramds_cfg import *
+from function_lib import get_bin_info
 
 file_counter = 1
 file_path = (file_series + '%04d') % file_counter
 
 # ******************************INFO READ-IN************************************
-with open(file_path + '.ifm','rU') as finfo:
-    # Read in the entire .ifm file as a series of lines. From info_str_list, the
-    # necessary sections can be acquired for various data parameters. This works
-    # granted the .ifm file never changes its format.
-    info_str_list = finfo.readlines()
-    
-    date_str = info_str_list[1][23:-2]
-    run_start_time = datetime.datetime(*time.strptime(date_str, \
-                        '%I:%M:%S %p %a, %b %d, %Y')[0:6])
-    
-    # Total time = real time
-    total_time = info_str_list[6].split()[3]
-    
-    # Live time for each detector channel
-    live_time =[0]*4
-    for channel in range(4):
-        live_time[channel] = info_str_list[9 + channel].split()[2]
-    
-    bufheadlen = int(info_str_list[33].split()[1])
-    eventheadlen = int(info_str_list[34].split()[1])
-    chanheadlen = 2 #int(info_str_list[35].split()[1])
+times, bufheadlen, eventheadlen, chanheadlen = get_bin_info(file_path)
+run_start_time, live_time, total_time = times['start'], times['live'], times['total']
 
 # Only initialize the buffer counter before the entire run... not each file.
 buffer_no = 0
@@ -130,7 +111,7 @@ while os.path.exists(file_path + '.bin'):
                         
                         # Store the data read in from the binary file into the
                         # HDF5 table.
-                        if energy <= energy_max:
+                        if energy < energy_max:
                             event['energy_' + str(channel)] = energy
                         else: event['energy_' + str(channel)] = -1
                     elif read_pattern[channel] == 0:

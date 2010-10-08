@@ -3,6 +3,43 @@
 # Definitions of all custom functions to be used by PYRAMDS
 
 import numpy as np
+import datetime
+import time
+
+from pyramds_cfg import *
+
+
+def get_bin_info(file_path):
+
+    with open(file_path + '.ifm','rU') as finfo:
+        # Read in the entire .ifm file as a series of lines. From info_str_list, the
+        # necessary sections can be acquired for various data parameters. This works
+        # granted the .ifm file never changes its format.
+        info_str_list = finfo.readlines()
+        
+        date_str = info_str_list[1][23:-2]
+        run_start_time = datetime.datetime(*time.strptime(date_str, \
+                            '%I:%M:%S %p %a, %b %d, %Y')[0:6])
+        
+        # Total time = real time
+        total_time = info_str_list[6].split()[3]
+        
+        # Live time for each detector channel
+        live_time =[0]*4
+        for channel in range(4):
+            live_time[channel] = info_str_list[9 + channel].split()[2]
+            
+        times = {
+            'start' :   run_start_time,
+            'total' :   total_time,
+            'live'  :   live_time
+        }
+        
+        bufheadlen = int(info_str_list[33].split()[1])
+        eventheadlen = int(info_str_list[34].split()[1])
+        chanheadlen = 2 #int(info_str_list[35].split()[1])
+
+    return times, bufheadlen, eventheadlen, chanheadlen
 
 def calc_det_limit(LM, RM, spec_array):
     """
@@ -50,3 +87,39 @@ def bin_count(t_start, t_stop, group):
 def marker2energy(marker, en_coeff):
     energy = en_coeff[0] + en_coeff[1] * marker
     return energy
+
+def write_spec(group, data_title, times):
+        
+    title_list = group.title.split()
+    spec_type = title_list[0]
+    det_no = title_list[-1]
+    group_title = spec_type + '-Det' + det_no
+    file_string = '/python/SPE_files/%s-%s_PYRAMDS.Spe' % (data_title, group_title)
+    
+    spec_markers = group[-1]
+    
+    with open(file_string, 'w') as specout:
+        field_width = 8
+        
+        # see: "ORTEC-Sofware-File-Structure-Manual.pdf" for more info
+        spec_id = 'PYRAMDS %s %s' % (data_title, group_title)
+        spec_rem = 'DET# %s\r\nDETDESC# PYRAMDS\r\nAP# Maestro Version 6.04' % det_no
+        spe_date = times['start'].strftime("%m/%d/%Y %H:%M:%S")
+        spe_meas = str(int(float(times['live'][int(det_no)]))) + ' ' + str(int(float(times['total'])))
+        
+        specout.write('$SPEC_ID:\r\n' + spec_id + '\r\n$SPEC_REM:\r\n' + spec_rem +
+                      '\r\n$DATE_MEA:\r\n' + spe_date + '\r\n$MEAS_TIM:\r\n' + spe_meas +
+                      '\r\n$DATA:\r\n0 ' + '8191' + '\r\n')
+        
+        # Begin writing out the values for each channel in this user-defined
+        # set of markers.
+        for en in range(8192):
+            str_number = str(spec_markers[en])
+            specout.write('%s\r\n' % (str_number.rjust(field_width)))
+        
+        roi_mark_list = []
+        
+        specout.write('$ROI:\r\n' + str(len(roi_mark_list)) + 
+                      '\r\n$PRESETS:\r\nNone\r\n0\r\n0\r\n$ENER_FIT:\r\n' + enerfit[det_no] +
+                      '\r\n$MCA_CAL:\r\n' + mca_cal[det_no] +
+                      '\r\n$SHAPE_CAL:\r\n' + shape_cal[det_no] + '\r\n')
