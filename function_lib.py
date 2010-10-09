@@ -5,6 +5,7 @@
 import numpy as np
 import datetime
 import time
+import tables as tb
 
 from pyramds_cfg import *
 
@@ -88,38 +89,44 @@ def marker2energy(marker, en_coeff):
     energy = en_coeff[0] + en_coeff[1] * marker
     return energy
 
-def write_spec(group, data_title, times):
-        
-    title_list = group.title.split()
-    spec_type = title_list[0]
-    det_no = title_list[-1]
-    group_title = spec_type + '-Det' + det_no
-    file_string = '/python/SPE_files/%s-%s_PYRAMDS.Spe' % (data_title, group_title)
+def write_spec(file_path, data_title, times):
     
-    spec_markers = group[-1]
-    
-    with open(file_string, 'w') as specout:
-        field_width = 8
-        
-        # see: "ORTEC-Sofware-File-Structure-Manual.pdf" for more info
-        spec_id = 'PYRAMDS %s %s' % (data_title, group_title)
-        spec_rem = 'DET# %s\r\nDETDESC# PYRAMDS\r\nAP# Maestro Version 6.04' % det_no
-        spe_date = times['start'].strftime("%m/%d/%Y %H:%M:%S")
-        spe_meas = str(int(float(times['live'][int(det_no)]))) + ' ' + str(int(float(times['total'])))
-        
-        specout.write('$SPEC_ID:\r\n' + spec_id + '\r\n$SPEC_REM:\r\n' + spec_rem +
-                      '\r\n$DATE_MEA:\r\n' + spe_date + '\r\n$MEAS_TIM:\r\n' + spe_meas +
-                      '\r\n$DATA:\r\n0 ' + '8191' + '\r\n')
-        
-        # Begin writing out the values for each channel in this user-defined
-        # set of markers.
-        for en in range(8192):
-            str_number = str(spec_markers[en])
-            specout.write('%s\r\n' % (str_number.rjust(field_width)))
-        
-        roi_mark_list = []
-        
-        specout.write('$ROI:\r\n' + str(len(roi_mark_list)) + 
-                      '\r\n$PRESETS:\r\nNone\r\n0\r\n0\r\n$ENER_FIT:\r\n' + enerfit[det_no] +
-                      '\r\n$MCA_CAL:\r\n' + mca_cal[det_no] +
-                      '\r\n$SHAPE_CAL:\r\n' + shape_cal[det_no] + '\r\n')
+    f = tb.openFile(file_path, 'r')
+    spectra = f.root.spectra
+    for spec_type in spectra:
+        for group in [x for x in spec_type if (x.name[-4:] == 'spec')]:
+            title_list = group.title.split()
+            spec_type = title_list[0]
+            det_no = title_list[-1]
+            group_title = spec_type + '-Det' + det_no
+            file_string = '/python/SPE_files/%s-%s_PYRAMDS.Spe' % (data_title, group_title)
+            
+            spec_markers = group[-1]
+            
+            with open(file_string, 'w') as specout:
+                field_width = 8
+                
+                # see: "ORTEC-Sofware-File-Structure-Manual.pdf" for more info
+                spec_id = 'PYRAMDS %s %s' % (data_title, group_title)
+                spec_rem = 'DET# %s\r\nDETDESC# PYRAMDS\r\nAP# Maestro Version 6.04' % det_no
+                spe_date = times['start'].strftime("%m/%d/%Y %H:%M:%S")
+                spe_meas = str(int(float(times['live'][int(det_no)]))) + ' ' + str(int(float(times['total'])))
+                
+                specout.write('$SPEC_ID:\r\n' + spec_id + '\r\n$SPEC_REM:\r\n' + spec_rem +
+                              '\r\n$DATE_MEA:\r\n' + spe_date + '\r\n$MEAS_TIM:\r\n' + spe_meas +
+                              '\r\n$DATA:\r\n0 ' + '8191' + '\r\n')
+                
+                # Begin writing out the values for each channel in this user-defined
+                # set of markers.
+                for en in range(819):
+                    str_number = str(spec_markers[en])
+                    specout.write('%s\r\n' % (str_number.rjust(field_width)))
+                
+                roi_mark_list = []
+                
+                specout.write('$ROI:\r\n' + str(len(roi_mark_list)) + 
+                              '\r\n$PRESETS:\r\nNone\r\n0\r\n0\r\n$ENER_FIT:\r\n' + enerfit[det_no] +
+                              '\r\n$MCA_CAL:\r\n' + mca_cal[det_no] +
+                              '\r\n$SHAPE_CAL:\r\n' + shape_cal[det_no] + '\r\n')
+            
+    f.close()

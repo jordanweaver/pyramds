@@ -262,7 +262,7 @@ for row in table.where("""%s""" % teststr):
     gg_event['energy'] = row['energy_1']
     gg_event['timestamp'] = row['timestamp']
     gg_event.append()
-    gg12table.flush()
+    gg1table.flush()
 
 dt_temp = np.zeros(energy_max + 1, dtype=np.int32)
 dt_array = np.zeros((t_array_dim + 1, energy_max + 1), dtype=np.int32)
@@ -291,7 +291,7 @@ for row in table.where("""%s""" % teststr):
     gg_event['energy'] = row['energy_2']
     gg_event['timestamp'] = row['timestamp']
     gg_event.append()
-    gg12table.flush()
+    gg2table.flush()
 
 dt_temp = np.zeros(energy_max + 1, dtype=np.int32)
 dt_array = np.zeros((t_array_dim + 1, energy_max + 1), dtype=np.int32)
@@ -304,7 +304,7 @@ for row in gg2table:
         dt_temp[row['energy']] += 1
 dt_array[-1] = dt_temp.copy()
 
-h5file.createArray(gGGcoinc, 'gg2_spec', dt_array, "G-G Time-Chunked Spec Array - Det 1")
+h5file.createArray(gGGcoinc, 'gg2_spec', dt_array, "G-G Time-Chunked Spec Array - Det 2")
 
 ################################################################################
 # Create sig_lookup strucutre in HDF5 file######################################
