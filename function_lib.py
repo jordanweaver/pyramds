@@ -118,7 +118,7 @@ def write_spec(file_path, data_title, times):
                 
                 # Begin writing out the values for each channel in this user-defined
                 # set of markers.
-                for en in range(819):
+                for en in range(8192):
                     str_number = str(spec_markers[en])
                     specout.write('%s\r\n' % (str_number.rjust(field_width)))
                 
