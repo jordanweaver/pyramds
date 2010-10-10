@@ -10,7 +10,7 @@ import time
 import os
 import numpy as np
 import math
-from tables import *
+import tables as tb
 import sys
 
 # pyramds_cfg contains user-supplied info on detector systems and which data
@@ -49,7 +49,7 @@ class AggEvent2(IsDescription):
     energy_2    = Int16Col(pos=1)
     timestamp   = Float32Col(pos=2)
 
-h5file = openFile(file_series + '.h5', mode = 'w', title = 'Data - ' + file_series)
+h5file = tb.openFile(file_series + '.h5', mode = 'w', title = 'Data - ' + file_series)
 group = h5file.createGroup(h5file.root, 'bin_data_parse', 'PIXIE Binary Parse')
 
 # This table is where the data will be placed after unpacking it from binary

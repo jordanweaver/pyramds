@@ -2,7 +2,7 @@
 import numpy as np
 
 # path to data series (leave off run number and extension)
-file_series = '/python/PIXIE_runs/debug-' #Eu152/Eu152_92710-'
+file_series = raw_input('Enter path to data series (no run numbers or extensions): ')
 #file_series = 'debug-' #EuCal/Eu152_92710-'
 #file_series = '/python/PIXIE_runs/EuCal/Eu152_92710-'
 
