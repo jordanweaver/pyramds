@@ -32,21 +32,21 @@ buffer_no = 0
 
 # Setup class variables for each field in the .h5 table
 class GammaEvent(IsDescription):
-    energy_0    = Int16Col(pos=0)    # energy reading from channels 0, 1, 2
-    energy_1    = Int16Col(pos=1)
-    energy_2    = Int16Col(pos=2)
+    energy_0    = Int32Col(pos=0)    # energy reading from channels 0, 1, 2
+    energy_1    = Int32Col(pos=1)
+    energy_2    = Int32Col(pos=2)
     deltaT_01   = Float32Col(pos=3)  # time difference between energy_0 & _1
     deltaT_02   = Float32Col(pos=4)  # and so on...
     deltaT_12   = Float32Col(pos=5)  # and so on...
     timestamp   = Float32Col(pos=6)
     
 class AggEvent1(IsDescription):
-    energy    = Int16Col(pos=0)
+    energy    = Int32Col(pos=0)
     timestamp = Float32Col(pos=1)
     
 class AggEvent2(IsDescription):
-    energy_1    = Int16Col(pos=0)
-    energy_2    = Int16Col(pos=1)
+    energy_1    = Int32Col(pos=0)
+    energy_2    = Int32Col(pos=1)
     timestamp   = Float32Col(pos=2)
 
 h5file = openFile(file_series + '.h5', mode = 'w', title = 'Data - ' + file_series)
@@ -58,12 +58,12 @@ table = h5file.createTable(group, 'readout', GammaEvent, "Data readout")
 # Pointer object to place values on in the row for each event
 event = table.row
 
+#ftest = open('checkoutput.txt', 'w')
 while os.path.exists(file_path + '.bin'):
     
     file_pos = 0
     
     with open(file_path + '.bin', 'rb') as fin:
-        
         print('Working on ' + file_path + '.bin ...')
         starttime = time.time()
         
@@ -102,21 +102,26 @@ while os.path.exists(file_path + '.bin'):
                 read_pattern.reverse()
                 hit_pattern = ''.join(map(str, read_pattern))
                 
+                #ftest.write('{0:s} '.format(hit_pattern))
+                
                 trigger_vals = [float('nan')]*3
                 for channel in range(3):
                     if read_pattern[channel] == 1:
                         words = fin.read(2 * 2)
                         chan_trigtime, energy = \
-                                    struct.unpack('<' +str(chanheadlen) + 'H', words)
+                                    struct.unpack('<' + str(chanheadlen) + 'H', words)
+                        #ftest.write('{0:8d} {1:6d} '.format(chan_trigtime, energy))
                         trigger_vals[channel] = (float((evt_timehi * 64000 + chan_trigtime) * tunits))
                         
                         # Store the data read in from the binary file into the
                         # HDF5 table.
-                        if energy < energy_max:
-                            event['energy_' + str(channel)] = energy
-                        else: event['energy_' + str(channel)] = -1
+                        if ((energy > energy_max) & (channel > 0)):
+                            event['energy_' + str(channel)] = -1
+                        else: event['energy_' + str(channel)] = energy
                     elif read_pattern[channel] == 0:
                         event['energy_' + str(channel)] = -1
+                        
+                #ftest.write('\n')
                 
                 event['deltaT_01'] = abs(trigger_vals[0] - trigger_vals[1])
                 event['deltaT_02'] = abs(trigger_vals[0] - trigger_vals[2])
@@ -125,6 +130,7 @@ while os.path.exists(file_path + '.bin'):
                 event['timestamp'] = (buf_timehi * 64000 * 64000 + evt_timehi * 64000 + evt_timelo) * tunits * 1e-9
                 
                 event.append()
+                table.flush()
         
             # Read word, buf_ndata, to continue loop or break
             word = fin.read(2)    
@@ -138,6 +144,8 @@ while os.path.exists(file_path + '.bin'):
             
     file_counter += 1
     file_path = (file_series + '%04d') % file_counter
+
+#ftest.close()
     
 t_final = (buf_timehi * 64000 * 64000 + evt_timehi * 64000 + evt_timelo) * tunits * 1e-9 # in seconds
 t_duration = t_final - t_start
