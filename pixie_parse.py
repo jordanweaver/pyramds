@@ -52,6 +52,12 @@ class AggEvent2(IsDescription):
 h5file = openFile(file_series + '.h5', mode = 'w', title = 'Data - ' + file_series)
 group = h5file.createGroup(h5file.root, 'bin_data_parse', 'PIXIE Binary Parse')
 
+h5file.createGroup(h5file.root, 'times', 'File time information')
+h5file.createArray(h5file.root.times, 'live', times['live'], "Live times of run")
+startt = times['start'].timetuple()
+h5file.createArray(h5file.root.times, 'start', [x for x in startt][:-3], "Start time list of run")
+h5file.createArray(h5file.root.times, 'total', [times['total']])
+
 # This table is where the data will be placed after unpacking it from binary
 table = h5file.createTable(group, 'readout', GammaEvent, "Data readout")
 

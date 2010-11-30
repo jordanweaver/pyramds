@@ -89,10 +89,19 @@ def marker2energy(marker, en_coeff):
     energy = en_coeff[0] + en_coeff[1] * marker
     return energy
 
-def write_spec(file_path, data_title, times):
+def write_spec(file_path, data_title):
     
     f = tb.openFile(file_path, 'r')
     spectra = f.root.spectra
+    
+    stl = f.root.times.start.read()
+    startt = datetime.datetime(stl[0],stl[1],stl[2],stl[3],stl[4],stl[5])
+    times = {
+        'live'      :   list(f.root.times.live.read()),
+        'start'     :   startt,
+        'total'     :   f.root.times.total.read()[0]
+    }
+
     for spec_type in spectra:
         for group in [x for x in spec_type if (x.name[-4:] == 'spec')]:
             title_list = group.title.split()
