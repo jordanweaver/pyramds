@@ -23,8 +23,8 @@ spec_user_input = {
 # Edit these values to correspond to current system being used (see ORTEC pdf).
 enerfit = {
     '0' :   '1.568643 0.382061',
-    '1' :   '-1.485031 0.383938',
-    '2' :   '0.529963 0.421889',
+    '1' :   '0.118379 0.506684',
+    '2' :   '1.024204 0.413356',
     '3' :   ''
     }
 
