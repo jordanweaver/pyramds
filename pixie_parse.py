@@ -163,9 +163,9 @@ gNormal = h5file.createGroup(h5file.root.spectra, "normal", "Normal Data")
 gCompton = h5file.createGroup(h5file.root.spectra, "compton", "Compton-Supp Data")
 gGGcoinc = h5file.createGroup(h5file.root.spectra, "ggcoinc", "Gamma-Gamma Data")
 
-################################################################################
-# Store Det-1 & 2 arrays containing normal counts###############################
-################################################################################
+#########################################################################
+# Store Det-1 & 2 arrays containing normal counts########################
+#########################################################################
 print('Started creating normal data aggregates...')
 norm12table = h5file.createTable(gNormal, 'norm_evts12', AggEvent2, "Normal Time-Stamped Data")
 norm_event = norm12table.row
@@ -206,9 +206,9 @@ dt_array[-1] = dt_temp.copy()
         
 h5file.createArray(gNormal, 'norm2_spec', dt_array, "Normal Time-Chunked Spec Array - Det 2")
 
-################################################################################
-# Store Det-1 & 2 arrays containing Compton counts##############################
-################################################################################
+########################################################################
+# Store Det-1 & 2 arrays containing Compton counts######################
+########################################################################
 print('Started creating anti-coincidence data aggregates...')
 
 compt1table = h5file.createTable(gCompton, 'compt_evts1', AggEvent1, "Compton Time-Stamped Data - Det 1")
@@ -257,9 +257,9 @@ dt_array[-1] = dt_temp.copy()
    
 h5file.createArray(gCompton, 'compt2_spec', dt_array, "Compton-Supp Time-Chunked Spec Array - Det 2")
 
-################################################################################
-# Store Det 1 & 2 Gamma-Gamma arrays containg counts############################
-################################################################################
+########################################################################
+# Store Det 1 & 2 Gamma-Gamma arrays containg counts####################
+########################################################################
 print('Started creating coincidence data aggregates...')
 
 gg1table = h5file.createTable(gGGcoinc, 'gg_evts1', AggEvent1, "G-G Time-Stamped Data - Det 1")
@@ -320,9 +320,9 @@ dt_array[-1] = dt_temp.copy()
 
 h5file.createArray(gGGcoinc, 'gg2_spec', dt_array, "G-G Time-Chunked Spec Array - Det 2")
 
-################################################################################
-# Create sig_lookup strucutre in HDF5 file######################################
-################################################################################
+########################################################################
+# Create sig_lookup strucutre in HDF5 file##############################
+########################################################################
 
 class SigFields(IsDescription):
     name    = StringCol(8,pos=0)
