@@ -21,14 +21,14 @@ from function_lib import get_bin_info
 file_counter = 1
 file_path = (file_series + '%04d') % file_counter
 
-# ******************************INFO READ-IN************************************
+# ******************************INFO READ-IN******************************
 times, bufheadlen, eventheadlen, chanheadlen = get_bin_info(file_path)
 run_start_time, live_time, total_time = times['start'], times['live'], times['total']
 
 # Only initialize the buffer counter before the entire run... not each file.
 buffer_no = 0
 
-# ******************************DATA READ-IN************************************
+# ******************************DATA READ-IN******************************
 
 # Setup class variables for each field in the .h5 table
 class GammaEvent(IsDescription):
