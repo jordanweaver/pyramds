@@ -13,16 +13,19 @@ from function_lib import marker2energy
 #file_path = raw_input('Enter path to HDF file: ')
 #file_path = '/python/PIXIE_runs/PreRevision/debug-.h5'
 #file_path = '/python/PIXIE_runs/Standards/Co60_LOW-5min.h5'
-file_path = '/python/PIXIE_runs/Se_Test/Se_test.h5'
-#file_path = '/python/PIXIE_runs/WFP_1222/WFP2_1222-3d.h5'
+#file_path = '/python/PIXIE_runs/Se_Test/Se_test.h5'
+file_path = '/python/PIXIE_runs/WFP_1222/WFP2_1222-3d.h5'
 
-en_coeff1 = [0.118379, 0.506684]
-en_coeff2 = [1.024204, 0.413356]
+en_coeff1 = [0.118379, 0.41] #3-day coeff
+en_coeff2 = [-1.646097, 0.47]
+
+#en_coeff1 = [-0.931608, 0.391917] #28-day coeff
+#en_coeff2 = [-1.646097, 0.414058]
 
 f = tb.openFile(file_path, 'r')
 evtstab = f.root.bin_data_parse.readout
 
-emax = 700
+emax = 800
 gg_list_1 = np.array([row['energy_1'] for row in evtstab.where("""(energy_1 <= emax) & (energy_2 <= emax) & (energy_1 > 0) & (energy_2 > 0)""")])
 gg_list_2 = np.array([row['energy_2'] for row in evtstab.where("""(energy_1 <= emax) & (energy_2 <= emax) & (energy_1 > 0) & (energy_2 > 0)""")])
 
@@ -35,12 +38,6 @@ for i in range(len(gg_list_1)):
 for i in range(len(gg_list_2)):
     gg_en_2[i] = marker2energy(gg_list_2[i], en_coeff2)
 
-xmin = 0
-xmax = gg_en_1.max()
-ymin = 0
-ymax = gg_en_2.max()
-
-print('Generating cust_list...')
 cust_hist = np.ones(shape=(emax,emax), dtype=np.int32)
 for i in range(len(gg_list_1)):
     if ((gg_list_1[i]<emax) and (gg_list_2[i]<emax)):
@@ -48,14 +45,17 @@ for i in range(len(gg_list_1)):
 
 xi = np.arange(emax)
 yi = np.arange(emax)
-X,Y = np.meshgrid(xi,yi)
 
-print('Initializing plot...')
-fig = plt.figure()
+xcoord = en_coeff1[0] + en_coeff1[1]*xi
+ycoord = en_coeff2[0] + en_coeff2[1]*yi
+
+X,Y = np.meshgrid(xcoord,ycoord)
+
+fig = plt.figure(figsize=(15,12))
 ax = fig.gca(projection='3d')
 
-print('Starting plot...')
-ax.plot_surface(X,Y,cust_hist, linewidth=0, rstride=2, cstride=2, antialiased=False, cmap=cm.jet)
-plt.xlabel('Lower Detector Energy (keV)')
-plt.ylabel('Upper Detector Energy (keV)')
+ax.plot_surface(X,Y,cust_hist, linewidth=0, rstride=5, cstride=5, antialiased=False, cmap=cm.jet)
+ax.set_xlabel('Lower Detector Energy (keV)')
+ax.set_ylabel('Upper Detector Energy (keV)')
+ax.set_zlabel('Counts')
 plt.show()
