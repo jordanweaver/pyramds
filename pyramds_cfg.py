@@ -6,8 +6,8 @@ file_series = raw_input('Enter path to data series (no run numbers or extensions
 #file_series = 'debug-' #EuCal/Eu152_92710-'
 #file_series = '/python/PIXIE_runs/EuCal/Eu152_92710-'
 
-#lib_name = '/python/PYRAMDS/sig_library.txt'
-lib_name = 'sig_library.txt'
+lib_name = '/python/PYRAMDS/sig_library.txt'
+#lib_name = 'sig_library.txt'
 
 spec_user_input = {
     'type'      : [],   # 0-Normal, 1-Compton, 2-GG, 3-GG/Compton, 4-Specgram
