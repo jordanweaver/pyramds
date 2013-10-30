@@ -39,11 +39,11 @@ class GammaEvent(IsDescription):
     deltaT_02   = Float32Col(pos=4)  # and so on...
     deltaT_12   = Float32Col(pos=5)  # and so on...
     timestamp   = Float32Col(pos=6)
-    
+
 class AggEvent1(IsDescription):
     energy    = Int32Col(pos=0)
     timestamp = Float32Col(pos=1)
-    
+
 class AggEvent2(IsDescription):
     energy_1    = Int32Col(pos=0)
     energy_2    = Int32Col(pos=1)
@@ -66,50 +66,50 @@ event = table.row
 
 #ftest = open('checkoutput.txt', 'w')
 while os.path.exists(file_path + '.bin'):
-    
+
     file_pos = 0
-    
+
     with open(file_path + '.bin', 'rb') as fin:
         print('Working on ' + file_path + '.bin ...')
         starttime = time.time()
-        
+
         # Pointer object to place values on in the row for each event. Must
         # create new instance each time .flush is called (every .bin file)
         event = table.row
-        
+
         word = fin.read(2)
-        
+
         while word:
-        
+
             # Determine the length of the buffer to be used in recognizing new buffer
             buf_ndata = struct.unpack('<H', word)[0]
             fin.seek(-2,1)
             file_pos += (buf_ndata * 2) # Increase limits of the file pointer
-        
+
             # Read in buffer header data
             header = fin.read(bufheadlen * 2)
             buf_ndata, buf_modnum, buf_format, buf_timehi, buf_timemi, buf_timelo = \
                                     struct.unpack('<' + str(bufheadlen) + 'H', header)
-                
+
             # Remember the time of the first buffer of entire run. Use this for comparing time stops.
             if buffer_no == 0:
                 t_start_hi = buf_timehi * 64000 * 64000
                 t_start_mi = buf_timemi * 64000
                 t_start_lo = buf_timelo
                 t_start = (t_start_hi + t_start_mi + t_start_lo) * tunits * 1e-9 # in seconds
-            
+
             while fin.tell() < file_pos:
                 # Read in event header data
                 header = fin.read(eventheadlen * 2)
                 evt_pattern, evt_timehi, evt_timelo = \
                                 struct.unpack('<' + str(eventheadlen) + 'H', header)
-                
+
                 read_pattern = list(map(int, bin(evt_pattern)[-4:]))
                 read_pattern.reverse()
                 hit_pattern = ''.join(map(str, read_pattern))
-                
+
                 #ftest.write('{0:s} '.format(hit_pattern))
-                
+
                 trigger_vals = [float('nan')]*3
                 for channel in range(3):
                     if read_pattern[channel] == 1:
@@ -118,7 +118,7 @@ while os.path.exists(file_path + '.bin'):
                                     struct.unpack('<' + str(chanheadlen) + 'H', words)
                         #ftest.write('{0:8d} {1:6d} '.format(chan_trigtime, energy))
                         trigger_vals[channel] = (float((evt_timehi * 64000 + chan_trigtime) * tunits))
-                        
+
                         # Store the data read in from the binary file into the
                         # HDF5 table.
                         if ((energy > energy_max) & (channel > 0)):
@@ -126,37 +126,37 @@ while os.path.exists(file_path + '.bin'):
                         else: event['energy_' + str(channel)] = energy
                     elif read_pattern[channel] == 0:
                         event['energy_' + str(channel)] = -1
-                        
+
                 #ftest.write('\n')
-                
+
                 event['deltaT_01'] = abs(trigger_vals[0] - trigger_vals[1])
                 event['deltaT_02'] = abs(trigger_vals[0] - trigger_vals[2])
                 event['deltaT_12'] = abs(trigger_vals[1] - trigger_vals[2])
-                
+
                 event['timestamp'] = (buf_timehi * 64000 * 64000 + evt_timehi * 64000 + evt_timelo) * tunits * 1e-9
-                
+
                 event.append()
                 table.flush()
-        
+
             # Read word, buf_ndata, to continue loop or break
-            word = fin.read(2)    
-        
+            word = fin.read(2)
+
             buffer_no += 1
             if buffer_no%100 == 0:
                 print('Buffer No. %d' % buffer_no)
-            
-            # Flush data to the HFD5 table and start new buffer    
+
+            # Flush data to the HFD5 table and start new buffer
             table.flush()
-            
+
     file_counter += 1
     file_path = (file_series + '%04d') % file_counter
 
 #ftest.close()
-    
+
 t_final = (buf_timehi * 64000 * 64000 + evt_timehi * 64000 + evt_timelo) * tunits * 1e-9 # in seconds
 t_duration = t_final - t_start
 t_array_dim = int(np.ceil(t_duration/t_steps))
-    
+
 # Define new groups within HDF5 for storing each spectra type for each detector
 spectra = h5file.createGroup(h5file.root, "spectra", "Spectra Arrays")
 gNormal = h5file.createGroup(h5file.root.spectra, "normal", "Normal Data")
@@ -189,7 +189,7 @@ for row in norm12table:
         dt_temp[row['energy_1']] += 1
 dt_array[-1] = dt_temp.copy()
 
-    
+
 h5file.createArray(gNormal, 'norm1_spec', dt_array, "Normal Time-Chunked Spec Array - Det 1")
 
 # Det 2
@@ -203,7 +203,7 @@ for row in norm12table:
     if row['energy_2'] >= 0:
         dt_temp[row['energy_2']] += 1
 dt_array[-1] = dt_temp.copy()
-        
+
 h5file.createArray(gNormal, 'norm2_spec', dt_array, "Normal Time-Chunked Spec Array - Det 2")
 
 ########################################################################
@@ -219,7 +219,7 @@ for row in table.where("""(energy_0 == -1) & (energy_1 != -1) & (energy_2 == -1)
     compt_event['timestamp'] = row['timestamp']
     compt_event.append()
     compt1table.flush()
-    
+
 compt2table = h5file.createTable(gCompton, 'compt_evts2', AggEvent1, "Compton Time-Stamped Data - Det 2")
 compt_event = compt2table.row
 
@@ -228,7 +228,7 @@ for row in table.where("""(energy_0 == -1) & (energy_1 == -1) & (energy_2 != -1)
     compt_event['timestamp'] = row['timestamp']
     compt_event.append()
     compt2table.flush()
-    
+
 # Det 1
 dt_temp = np.zeros(energy_max + 1, dtype=np.int32)
 dt_array = np.zeros((t_array_dim + 1, energy_max + 1), dtype=np.int32)
@@ -240,7 +240,7 @@ for row in compt1table:
     if row['energy'] >= 0:
         dt_temp[row['energy']] += 1
 dt_array[-1] = dt_temp.copy()
-   
+
 h5file.createArray(gCompton, 'compt1_spec', dt_array, "Compton-Supp Time-Chunked Spec Array - Det 1")
 
 # Det 2
@@ -254,7 +254,7 @@ for row in compt2table:
     if row['energy'] >= 0:
         dt_temp[row['energy']] += 1
 dt_array[-1] = dt_temp.copy()
-   
+
 h5file.createArray(gCompton, 'compt2_spec', dt_array, "Compton-Supp Time-Chunked Spec Array - Det 2")
 
 ########################################################################
@@ -348,7 +348,7 @@ for x in sig_lookup[1].keys():
     sigitem['energy'] = gamma_lib[x][1]
     sigitem.append()
     sigTable.flush()
-    
+
 # Create table for det 2 sig markers
 sigTable = h5file.createTable(gSig, "det2_sig", SigFields, "Sig Markers for Det 2")
 sigitem = sigTable.row
@@ -360,5 +360,5 @@ for x in sig_lookup[2].keys():
     sigitem['energy'] = gamma_lib[x][1]
     sigitem.append()
     sigTable.flush()
-    
+
 h5file.close()
