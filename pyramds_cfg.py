@@ -61,9 +61,9 @@ with open(lib_name, 'r') as ginput:
 
     line_data = ginput.readline().split()
     while line_data:
-        ZAID = line_data[0]
+        ZAID     = line_data[0]
         name_str = line_data[1]
-        energy = line_data[2]
+        energy   = line_data[2]
 
         gamma_lib[ZAID] = [name_str, float(energy)]
 

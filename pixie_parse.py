@@ -32,22 +32,22 @@ buffer_no = 0
 
 # Setup class variables for each field in the .h5 table
 class GammaEvent(IsDescription):
-    energy_0    = Int32Col(pos=0)    # energy reading from channels 0, 1, 2
-    energy_1    = Int32Col(pos=1)
-    energy_2    = Int32Col(pos=2)
-    deltaT_01   = Float32Col(pos=3)  # time difference between energy_0 & _1
-    deltaT_02   = Float32Col(pos=4)  # and so on...
-    deltaT_12   = Float32Col(pos=5)  # and so on...
-    timestamp   = Float32Col(pos=6)
+    energy_0  = Int32Col(pos=0)    # energy reading from channels 0, 1, 2
+    energy_1  = Int32Col(pos=1)
+    energy_2  = Int32Col(pos=2)
+    deltaT_01 = Float32Col(pos=3)  # time difference between energy_0 & _1
+    deltaT_02 = Float32Col(pos=4)  # and so on...
+    deltaT_12 = Float32Col(pos=5)  # and so on...
+    timestamp = Float32Col(pos=6)
 
 class AggEvent1(IsDescription):
     energy    = Int32Col(pos=0)
     timestamp = Float32Col(pos=1)
 
 class AggEvent2(IsDescription):
-    energy_1    = Int32Col(pos=0)
-    energy_2    = Int32Col(pos=1)
-    timestamp   = Float32Col(pos=2)
+    energy_1  = Int32Col(pos=0)
+    energy_2  = Int32Col(pos=1)
+    timestamp = Float32Col(pos=2)
 
 h5file = openFile(file_series + '.h5', mode = 'w', title = 'Data - ' + file_series)
 group = h5file.createGroup(h5file.root, 'bin_data_parse', 'PIXIE Binary Parse')
@@ -96,7 +96,7 @@ while os.path.exists(file_path + '.bin'):
                 t_start_hi = buf_timehi * 64000 * 64000
                 t_start_mi = buf_timemi * 64000
                 t_start_lo = buf_timelo
-                t_start = (t_start_hi + t_start_mi + t_start_lo) * tunits * 1e-9 # in seconds
+                t_start    = (t_start_hi + t_start_mi + t_start_lo) * tunits * 1e-9 # in seconds
 
             while fin.tell() < file_pos:
                 # Read in event header data
