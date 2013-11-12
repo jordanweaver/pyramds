@@ -19,7 +19,16 @@ import tables as tb
 from traits.api import HasTraits, Instance
 
 
+class PyramdsView(HasTraits):
 
+    # Filename for .bin files
+    bin_filename = File
+
+    # PLACEHOLDER FOR PARSING OPTIONS
+
+    # Save information
+    save_direcotry = Directory(".")
+    parse_run_button = Button(label="Parse Data")
 
 
 # File browser for selecting PIXIE .bin file for parsing
