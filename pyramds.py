@@ -17,6 +17,7 @@ import numpy as np
 import tables as tb
 
 from traits.api import HasTraits, Instance
+from enaml.widgets.api import Window, RadioButton
 
 
 class PyramdsView(HasTraits):
@@ -30,5 +31,3 @@ class PyramdsView(HasTraits):
     save_direcotry = Directory(".")
     parse_run_button = Button(label="Parse Data")
 
-
-# File browser for selecting PIXIE .bin file for parsing
