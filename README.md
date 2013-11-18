@@ -1,7 +1,6 @@
 # PYRAMDS #
-# (Python for Radioisotope Analysis & Multi-Detector Suppression) #
 
-PYRAMDS is at most a data parser for PIXIE Gamma Detector List Mode binary data. The data contained in PIXIE's .bin files can be reformatted into an HDF5 file. This file stores event information in a series of related table entries for quick extraction of the necessary events to be used in spectra construction.
+PYRAMDS (Python for Radioisotope Analysis & Multi-Detector Suppression) is at most a data parser for PIXIE Gamma Detector List Mode binary data. The data contained in PIXIE's .bin files can be reformatted into an HDF5 file. This file stores event information in a series of related table entries for quick extraction of the necessary events to be used in spectra construction.
 
 Focus is placed on the ability to post-process gamma detector data for producing various flavors of spectra, such as Compton suppressed or Gamma-Gamma coincidence.
 
