@@ -11,30 +11,27 @@ extraction of the necessary events used in spectra construction.
 import os
 import sys
 import struct
+import datetime
 import time
 
 import numpy as np
 import tables as tb
 
-from traits.api import HasTraits, Instance, File, Str
+from traits.api import HasTraits, Instance, File, Str, Dict, Int
 from traitsui.api import View, Item
 
 
 class PyramdsModel(HasTraits):
 
-    bin_filename = File
-
-    # Chop off run number and extension
-    base_filepath = bin_filename[:-8]
+    # Filecounter that tracks progress through file series
     file_counter = Int(1)
 
-    def get_bin_info(self, ):
+    def get_info(self):
 
-        """Read in the entire .ifm file as a series of lines. From info_str_list, the necessary sections can be acquired for various data parameters. This works granted the .ifm file never changes its format.
+        # Chop off run number and extension
+        base_filepath = bin_filename[:-8]
 
-        """
-
-        with open(file_path + '.ifm','rU') as finfo:
+        with open(self.base_filepath + '0001.ifm','rU') as finfo:
             info_str_list = finfo.readlines()
 
             date_str = info_str_list[1][23:-2]
@@ -58,9 +55,10 @@ class PyramdsModel(HasTraits):
             bufheadlen = int(info_str_list[33].split()[1])
             eventheadlen = int(info_str_list[34].split()[1])
             # Due to bug in PIXIE IGOR Software, need to declare head length
-            chanheadlen = 2 #int(info_str_list[35].split()[1])
+            # chanheadlen = #int(info_str_list[35].split()[1])
+            chanheadlen = 2
 
-        return times, bufheadlen, eventheadlen, chanheadlen
+        return self.times, self.bufheadlen, self.eventheadlen, self.chanheadlen
 
 
 
@@ -68,6 +66,11 @@ class PyramdsModel(HasTraits):
 
 class PyramdsView(HasTraits):
     pyramds = Instance(PyramdsModel)
+
+    bin_filename = File
+    
+    # Add button to submit filename and get info
+    pyramds.get_info(bin_filename)
 
     view = View(
                 Item('pyramds', style='custom', show_label=False, ),
