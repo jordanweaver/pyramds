@@ -17,66 +17,36 @@ import time
 import numpy as np
 import tables as tb
 
-from traits.api import HasTraits, Instance, File, Str, Dict, Int
-from traitsui.api import View, Item
+from traits.api import HasTraits, Instance, Property, File, Str, Dict, Int
+from traitsui.api import View, Item, Button, VGroup, Group
 
 
 class PyramdsModel(HasTraits):
 
     # Filecounter that tracks progress through file series
     file_counter = Int(1)
-
-    def get_info(self):
-
-        # Chop off run number and extension
-        base_filepath = bin_filename[:-8]
-
-        with open(self.base_filepath + '0001.ifm','rU') as finfo:
-            info_str_list = finfo.readlines()
-
-            date_str = info_str_list[1][23:-2]
-            run_start_time = datetime.datetime(*time.strptime(date_str, \
-                                '%I:%M:%S %p %a, %b %d, %Y')[0:6])
-
-            # Total time = real time
-            total_time = info_str_list[6].split()[3]
-
-            # Live time for each detector channel
-            live_time =[0]*4
-            for channel in range(4):
-                live_time[channel] = info_str_list[9 + channel].split()[2]
-
-            times = {
-                'start' :   run_start_time,
-                'total' :   total_time,
-                'live'  :   live_time
-            }
-
-            bufheadlen = int(info_str_list[33].split()[1])
-            eventheadlen = int(info_str_list[34].split()[1])
-            # Due to bug in PIXIE IGOR Software, need to declare head length
-            # chanheadlen = #int(info_str_list[35].split()[1])
-            chanheadlen = 2
-
-        return self.times, self.bufheadlen, self.eventheadlen, self.chanheadlen
-
-
-
-
+    
+    # Filename for .bin file in series that is currently being processed
+    bin_file_name = File()
+        
+    # Filename base (series number and extension removed)
+    base_filepath = Property
+    
+    def _get_base_filepath(self):
+        return self.bin_file_name[:8]
 
 class PyramdsView(HasTraits):
-    pyramds = Instance(PyramdsModel)
-
-    bin_filename = File
+    pmds = Instance(PyramdsModel)
     
-    # Add button to submit filename and get info
-    pyramds.get_info(bin_filename)
+    parse_button = Button(label="Parse Series")
 
-    view = View(
-                Item('pyramds', style='custom', show_label=False, ),
-            )
+    traits_view = View(Item(pmds.bin_file_name))
+    
+    # On filename change, update "Parse Series" button
 
 if __name__ == '__main__':
-    MainWindow = PyramdsView(pyramds=PyramdsModel())
-    MainWindow.configure_traits()
+    model = PyramdsModel()
+    
+    PyramdsWindow = PyramdsView(pmds=model)
+    PyramdsWindow.configure_traits()
 
