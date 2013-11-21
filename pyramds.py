@@ -8,17 +8,8 @@ extraction of the necessary events used in spectra construction.
 
 """
 
-import os
-import sys
-import struct
-import datetime
-import time
-
-import numpy as np
-import tables as tb
-
-from traits.api import HasTraits, Instance, Property, File, Str, Dict, Int
-from traitsui.api import View, Item, Button, VGroup, Group
+from traits.api import HasTraits, Instance, Property, File, Int
+from traitsui.api import View, Item, Button
 
 
 class PyramdsModel(HasTraits):
