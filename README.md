@@ -4,18 +4,18 @@ PYRAMDS (Python for Radioisotope Analysis & Multi-Detector Suppression) is at mo
 
 Focus is placed on the ability to post-process gamma detector data for producing various flavors of spectra, such as Compton suppressed or Gamma-Gamma coincidence.
 
-This is most definitely a work in progress. And by "this" I mean both the software and my ability to write it.
+This is most definitely a work in progress. And by "this" I mean both the code and my ability to write it.
 
 ------------------------------------
 
 ## Requirements ##
-Regarding older versions of the following packages, I have not investigated how "required" the versions I've listed are. Instead, think of these as the tools I used to build it. I used the [Enthought Canopy distribution](https://www.enthought.com/products/canopy/), supplemented with more recent versions of certain packages.
+Regarding older versions of the following packages, I have not investigated how "required" the versions I've listed are. Instead, think of these as the tools I used to build it at the time. I used the [Enthought Canopy distribution](https://www.enthought.com/products/canopy/), supplemented with more recent versions of certain packages.
 
 * Python 2.7
 * Numpy
 * PyTables
 * Traits
-* [Enaml](https://github.com/nucleic/enaml)
+* TraitsUI
 
 ## Installation & Usage ##
 After installing dependencies, clone the repo and run: `python pyramds.py`
