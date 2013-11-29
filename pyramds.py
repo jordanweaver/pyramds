@@ -7,8 +7,10 @@ that stores event information is a series of related table entries for quick
 extraction of the necessary events used in spectra construction.
 
 """
-
+import os
+from os.path import basename, dirname, join
 from datetime import datetime
+from fnmatch import fnmatch
 
 from traits.api import (HasTraits, Instance, Property, File, Int, Button)
 from traitsui.api import View, Item
@@ -41,19 +43,34 @@ class AggEvent2(IsDescription):
 
 class PyramdsParser(HasTraits):
 
-    # Filename for .bin file selected in UI
-    selected_bin_file = File()
+    # Path to data file selected in UI
+    selected_data_file = File()
 
-    # Filename base (series number and extension removed)
-    file_series = Property
+    # Path to current working directory
+    data_cwd = Property
+
+    # File series base name (series number and extension removed)
+    series_basename = Property
+
+    # List containing all files in data series
+    file_series = File([])
 
     # Filecounter that tracks progress through file series
     file_counter = Int(1)
+
     # File path currently being processed (no extension)
     active_file_path = Property
 
-    # Only initialize the buffer counter before the entire run... not each file.
+    # Only initialize buffer counter before the entire run
     buffer_no = 0
+
+    def get_file_series(self, ext):
+        # Populate file_series list
+        ext_wildcard = self.series_basename + '*.' + ext
+        
+        for file in os.listdir(self.data_cwd):
+            if fnmatch(join(self.data_cwd, file), ext_wildcard):
+                self.file_series.append(file)
 
     def get_bin_info(self):
 
@@ -86,11 +103,14 @@ class PyramdsParser(HasTraits):
             self.chanheadlen = 2 #int(info_str_list[35].split()[1])
 
 
-    def _get_file_series(self):
-        return self.selected_bin_file[:-8]
-    
+    def _get_data_cwd(self):
+        return dirname(parser.series_basename)
+
+    def _get_series_basename(self):
+        return self.selected_data_file[:-8]
+
     def _get_active_file_path(self):
-        return "{self.file_series}{self.file_counter:0>4}".format(self=self)
+        return "{self.series_basename}{self.file_counter:0>4}".format(self=self)
 
 class PyramdsView(HasTraits):
     Parser = Instance(PyramdsParser)
@@ -107,7 +127,7 @@ class PyramdsView(HasTraits):
 
     # On filename change, update parser model and pull new .ifm stats
     def _filename_changed(self, new):
-       self.Parser.selected_bin_file = new
+       self.Parser.selected_data_file = new
        # self.parser_view.get_bin_info()
 
 if __name__ == '__main__':
