@@ -8,13 +8,13 @@ extraction of the necessary events used in spectra construction.
 
 """
 import os
-from os.path import basename, dirname, join
 from datetime import datetime
 from fnmatch import fnmatch
+from os.path import basename, dirname, join
 
-from traits.api import (HasTraits, Instance, Property, File, Int, Button)
-from traitsui.api import View, Item
-from tables import IsDescription, Int32Col, Float32Col
+from tables import Float32Col, Int32Col, IsDescription
+from traits.api import Button, File, HasTraits, Instance, Int, Property, Str, List
+from traitsui.api import Group, VGroup, HSplit, Item, View, ListStrEditor, FileEditor
 
 # Setup PyTables metaclasses for use in Table constructor
 class GammaEvent(IsDescription):
@@ -53,7 +53,7 @@ class PyramdsParser(HasTraits):
     series_basename = Property
 
     # List containing all files in data series
-    file_series = File([])
+    file_series = List()
 
     # Filecounter that tracks progress through file series
     file_counter = Int(1)
@@ -65,12 +65,16 @@ class PyramdsParser(HasTraits):
     buffer_no = 0
 
     def get_file_series(self, ext):
+
+        self.file_series = []
+
         # Populate file_series list
-        ext_wildcard = self.series_basename + '*.' + ext
-        
+        file_wildcard = self.series_basename + '*.' + ext
+
         for file in os.listdir(self.data_cwd):
-            if fnmatch(join(self.data_cwd, file), ext_wildcard):
+            if fnmatch(join(self.data_cwd, file), file_wildcard):
                 self.file_series.append(file)
+        return self.file_series
 
     def get_bin_info(self):
 
@@ -115,24 +119,42 @@ class PyramdsParser(HasTraits):
 class PyramdsView(HasTraits):
     Parser = Instance(PyramdsParser)
 
-    filename = File()
+    bin_file_editor = FileEditor(filter=['*.bin'])
+    hdf_file_editor = FileEditor(filter=['*.h5'])
+    series_editor = ListStrEditor(editable=False)
+
+    bin_filename = File()
+    hdf_filename = File()
+    file_series = List()
     parse_button = Button(label="Parse Series")
 
-    traits_view = View(Item('filename', label = 'BIN File'),
-        width = 700,
-        height = 700,
+    traits_view = View(
+        Group(
+            VGroup(Item('bin_filename', editor=bin_file_editor, label='BIN File'),
+                   HSplit(Item('file_series', editor=series_editor, label='Series',width=0.4),
+                          Item('file_series', editor=series_editor, label='Stats'),
+                          springy=True),
+            show_border=True),
+            VGroup(Item('parse_button', show_label=False)),
+            label="PIXE PARSER"),
+        Group(
+            VGroup(Item('hdf_filename', editor=bin_file_editor, label='HDF File'),
+            show_border=True,),label="SPECTRUM EXPORTER"),
         resizable = True,
         title = "PYRAMDS",
         )
 
     # On filename change, update parser model and pull new .ifm stats
-    def _filename_changed(self, new):
+    def _bin_filename_changed(self, new):
+       
        self.Parser.selected_data_file = new
-       # self.parser_view.get_bin_info()
+       self.file_series = self.Parser.get_file_series('bin')
+       
+       for ifm in self.Parser.get_file_series('ifm'):
+           pass
 
 if __name__ == '__main__':
     parser = PyramdsParser()
 
     PyramdsWindow = PyramdsView(Parser=parser)
     PyramdsWindow.configure_traits()
-
