@@ -12,7 +12,7 @@ from datetime import datetime
 from fnmatch import fnmatch
 from os.path import basename, dirname, join
 
-from tables import Float32Col, Int32Col, IsDescription, openFile, createGroup
+from tables import Float32Col, Int32Col, IsDescription, openFile
 from traits.api import Button, File, HasTraits, Instance, Int, Property, Str, List
 from traitsui.api import Group, VGroup, HSplit, Item, View, ListStrEditor, FileEditor
 
@@ -52,9 +52,6 @@ class PyramdsParser(HasTraits):
     # File series base name (series number and extension removed)
     series_basename = Property
 
-    # List containing all files in data series
-    file_series = List()
-
     # Filecounter that tracks progress through file series
     file_counter = Int(1)
 
@@ -66,15 +63,15 @@ class PyramdsParser(HasTraits):
 
     def get_file_series(self, ext):
 
-        self.file_series = []
+        file_series = []
 
         # Populate file_series list
         file_wildcard = self.series_basename + '*.' + ext
 
         for file in os.listdir(self.data_cwd):
             if fnmatch(join(self.data_cwd, file), file_wildcard):
-                self.file_series.append(file)
-        return self.file_series
+                file_series.append(file)
+        return file_series
 
     def get_bin_info(self):
 
@@ -161,14 +158,17 @@ class PyramdsView(HasTraits):
 
     bin_filename = File()
     hdf_filename = File()
-    file_series = List()
+
+    bin_file_series = List()
+    ifm_file_series = List()
+
     parse_button = Button(label="Parse Series")
 
     traits_view = View(
         Group(
             VGroup(Item('bin_filename', editor=bin_file_editor, label='BIN File'),
-                   HSplit(Item('file_series', editor=series_editor, label='Series',width=0.4),
-                          Item('file_series', editor=series_editor, label='Stats'),
+                   HSplit(Item('bin_file_series', editor=series_editor, label='Series',width=0.4),
+                          Item('bin_file_series', editor=series_editor, label='Stats'),
                           springy=True),
             show_border=True),
             VGroup(Item('parse_button', show_label=False)),
@@ -184,9 +184,10 @@ class PyramdsView(HasTraits):
     def _bin_filename_changed(self, new):
 
        self.Parser.selected_data_file = new
-       self.file_series = self.Parser.get_file_series('bin')
+       self.bin_file_series = self.Parser.get_file_series('bin')
 
-       for ifm in self.Parser.get_file_series('ifm'):
+       self.ifm_file_series = self.Parser.get_file_series('ifm')
+       for ifm in self.ifm_file_series:
            pass
 
 if __name__ == '__main__':
