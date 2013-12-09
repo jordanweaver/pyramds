@@ -12,7 +12,7 @@ from datetime import datetime
 from fnmatch import fnmatch
 from os.path import basename, dirname, join
 
-from tables import Float32Col, Int32Col, IsDescription
+from tables import Float32Col, Int32Col, IsDescription, openFile, createGroup
 from traits.api import Button, File, HasTraits, Instance, Int, Property, Str, List
 from traitsui.api import Group, VGroup, HSplit, Item, View, ListStrEditor, FileEditor
 
@@ -106,6 +106,42 @@ class PyramdsParser(HasTraits):
             # Due to bug in PIXIE IGOR Software, explicity set head length
             self.chanheadlen = 2 #int(info_str_list[35].split()[1])
 
+    def create_h5(self):
+        """
+        Open a file pointer to the HDF5 file and set up each group that will
+        make up the framework of the overall file structure.
+        """
+
+        h5_filename = self.series_basename + '.h5'
+        h5_title = 'Data - ' + self.series_basename
+
+        self.h5file = openFile(h5_filename, mode = 'w', title = h5_title)
+
+        self.h5_group = self.h5file.createGroup(self.h5file.root,
+            'bin_data_parse', 'PIXIE Binary Parse')
+
+        self.h5file.createGroup(self.h5file.root,
+            'times', 'File time information')
+
+        self.h5file.createGroup(self.h5file.root,
+            "spectra", "Spectra Arrays")
+
+        self.h5_gNormal = self.h5file.createGroup(self.h5file.root.spectra,
+            "normal", "Normal Data")
+
+        self.h5_gCompton = self.h5file.createGroup(self.h5file.root.spectra,
+            "compton", "Compton-Supp Data")
+
+        self.h5_gGGcoinc = self.h5file.createGroup(self.h5file.root.spectra,
+            "ggcoinc", "Gamma-Gamma Data")
+
+    def record_time_stats(self):
+
+        self.h5file.createArray(self.h5file.root.times, 'live', times['live'], "Live times of run")
+        startt = times['start'].timetuple()
+        self.h5file.createArray(self.h5file.root.times, 'start', [x for x in startt][:-3], "Start time list of run")
+        self.h5file.createArray(self.h5file.root.times, 'total', [times['total']])
+
 
     def _get_data_cwd(self):
         return dirname(parser.series_basename)
@@ -146,10 +182,10 @@ class PyramdsView(HasTraits):
 
     # On filename change, update parser model and pull new .ifm stats
     def _bin_filename_changed(self, new):
-       
+
        self.Parser.selected_data_file = new
        self.file_series = self.Parser.get_file_series('bin')
-       
+
        for ifm in self.Parser.get_file_series('ifm'):
            pass
 

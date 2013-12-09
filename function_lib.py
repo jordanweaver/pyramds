@@ -2,11 +2,11 @@
 
 # Definitions of all custom functions to be used by PYRAMDS
 
-import numpy as np
 import datetime
 import time
-import tables as tb
 
+import numpy as np
+import tables as tb
 from pyramds_cfg import *
 
 
