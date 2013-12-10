@@ -9,9 +9,7 @@ import struct
 import time
 import os
 import numpy as np
-import math
 from tables import *
-import sys
 
 # pyramds_cfg contains user-supplied info on detector systems and which data
 # files are to be used in the analysis

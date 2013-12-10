@@ -2,20 +2,21 @@
 
 # Definitions of all custom functions to be used by PYRAMDS
 
-import numpy as np
 import datetime
 import time
-import tables as tb
 
+import numpy as np
+import tables as tb
 from pyramds_cfg import *
 
 
 def get_bin_info(file_path):
 
     with open(file_path + '.ifm','rU') as finfo:
-        # Read in the entire .ifm file as a series of lines. From info_str_list, the
-        # necessary sections can be acquired for various data parameters. This works
-        # granted the .ifm file never changes its format.
+        """Read in the entire .ifm file as a series of lines. From info_str_list, the necessary sections can be acquired for various data parameters. This works granted the .ifm file never changes its format.
+
+        """
+
         info_str_list = finfo.readlines()
 
         date_str = info_str_list[1][23:-2]
@@ -38,6 +39,7 @@ def get_bin_info(file_path):
 
         bufheadlen = int(info_str_list[33].split()[1])
         eventheadlen = int(info_str_list[34].split()[1])
+        # Due to bug in PIXIE IGOR Software, need to declare head length
         chanheadlen = 2 #int(info_str_list[35].split()[1])
 
     return times, bufheadlen, eventheadlen, chanheadlen
