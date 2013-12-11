@@ -151,13 +151,17 @@ class PyramdsParser(HasTraits):
     def record_time_stats(self):
 
         self.h5file.createArray(
-            self.h5file.root.stats, 'live', stats['live'], "Live stats of run")
-        startt = stats['start'].timetuple()
+            self.h5file.root.stats, 'live',
+            self.stats['live'], "Live stats of run")
+
+        startt = self.stats['start'].timetuple()
+
         self.h5file.createArray(
             self.h5file.root.stats, 'start', [x for x in startt][:-3],
             "Start time list of run")
+
         self.h5file.createArray(
-            self.h5file.root.stats, 'total', [stats['total']])
+            self.h5file.root.stats, 'total', [self.stats['total']])
 
     def _get_data_cwd(self):
         return dirname(parser.series_basename)
