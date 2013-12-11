@@ -8,13 +8,14 @@ extraction of the necessary events used in spectra construction.
 
 """
 import os
-import numpy as np
 from datetime import datetime
 from fnmatch import fnmatch
 from os.path import dirname, join
 
+import numpy as np
 from tables import Float32Col, Int32Col, IsDescription, openFile
-from traits.api import (Button, File, HasTraits, Instance, Int, List, Property)
+from traits.api import (Button, Dict, File, HasTraits, Instance, Int, List,
+                        Property)
 from traitsui.api import (FileEditor, Group, HSplit, Item, ListStrEditor,
                           VGroup, View)
 
@@ -109,9 +110,11 @@ class PyramdsParser(HasTraits):
                 # Bug in PIXIE IGOR Software, explicity set chanheadlen
                 self.chanheadlen = 2  # int(info_str_list[35].split()[1])
 
-        self.times = {'start': run_start_time,
+        self.stats = {'start': run_start_time,
                       'total': str(total_time),
                       'live': map(str, live_time)}
+
+        return self.stats
 
     def create_h5(self):
         """
@@ -129,7 +132,7 @@ class PyramdsParser(HasTraits):
             'bin_data_parse', 'PIXIE Binary Parse')
 
         self.h5file.createGroup(
-            self.h5file.root, 'times', 'File time information')
+            self.h5file.root, 'stats', 'File time information')
 
         self.h5file.createGroup(
             self.h5file.root, "spectra", "Spectra Arrays")
@@ -148,13 +151,13 @@ class PyramdsParser(HasTraits):
     def record_time_stats(self):
 
         self.h5file.createArray(
-            self.h5file.root.times, 'live', times['live'], "Live times of run")
-        startt = times['start'].timetuple()
+            self.h5file.root.stats, 'live', stats['live'], "Live stats of run")
+        startt = stats['start'].timetuple()
         self.h5file.createArray(
-            self.h5file.root.times, 'start', [x for x in startt][:-3],
+            self.h5file.root.stats, 'start', [x for x in startt][:-3],
             "Start time list of run")
         self.h5file.createArray(
-            self.h5file.root.times, 'total', [times['total']])
+            self.h5file.root.stats, 'total', [stats['total']])
 
     def _get_data_cwd(self):
         return dirname(parser.series_basename)
@@ -179,6 +182,8 @@ class PyramdsView(HasTraits):
 
     bin_file_series = List()
     ifm_file_series = List()
+
+    stats = Dict()
 
     parse_button = Button(label="Parse Series")
 
@@ -205,11 +210,10 @@ class PyramdsView(HasTraits):
         self.bin_file_series = self.Parser.get_file_series('bin')
 
         self.ifm_file_series = self.Parser.get_file_series('ifm')
-        for ifm in self.ifm_file_series:
-           pass
+        self.stats = self.Parser.get_bin_info()
 
 if __name__ == '__main__':
     parser = PyramdsParser()
 
-    PyramdsWindow = PyramdsView(Parser=parser)
-    PyramdsWindow.configure_traits()
+    pv = PyramdsView(Parser=parser)
+    pv.configure_traits()
