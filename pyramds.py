@@ -13,19 +13,24 @@ from traitsui.api import (FileEditor, Group, HSplit, Item,
 
 from pyramds_model import PyramdsParser
 
+class SeriesView(HasTraits):
+    bin_file_series = List(label="BIN File", desc="Select file from series")
+    series_editor = ListStrEditor(editable=False)
+
+    view = View(Item('bin_file_series',
+                     editor=series_editor, style='readonly'))
 
 class PyramdsView(HasTraits):
-    Parser = Instance(PyramdsParser)
+    parser = Instance(PyramdsParser)
+    series_view = Instance(SeriesView)
 
     bin_file_editor = FileEditor(filter=['*.bin'])
     hdf_file_editor = FileEditor(filter=['*.h5'])
-    series_editor = ListStrEditor(editable=False)
     stats_editor = TextEditor(multi_line=True)
 
     bin_filename = File()
     hdf_filename = File()
 
-    bin_file_series = List()
     ifm_file_series = List()
 
     stats = Dict()
@@ -35,7 +40,7 @@ class PyramdsView(HasTraits):
     traits_view = View(
         Group(
             VGroup(Item('bin_filename', editor=bin_file_editor, label='BIN File'),
-                   HSplit(Item('bin_file_series', editor=series_editor, label='Series',width=0.4),
+                   HSplit(Item('series_view', style='custom'),
                           Item('stats', editor=stats_editor, label='Stats'),
                           springy=True),
             show_border=True),
@@ -51,13 +56,14 @@ class PyramdsView(HasTraits):
     # On filename change, update parser model and pull new .ifm stats
     def _bin_filename_changed(self, new):
 
-        self.Parser.selected_data_file = new
-        self.bin_file_series = self.Parser.get_file_series('bin')
+        self.parser.selected_data_file = new
+        self.bin_file_series = self.parser.get_file_series('bin')
 
-        self.stats = self.Parser.get_bin_info()
+        self.stats = self.parser.get_bin_info()
 
 if __name__ == '__main__':
-    parser = PyramdsParser()
+    pp = PyramdsParser()
+    sv = SeriesView()
 
-    pv = PyramdsView(Parser=parser)
+    pv = PyramdsView(parser=pp, series_view=)
     pv.configure_traits()
