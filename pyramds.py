@@ -7,7 +7,9 @@ that stores event information is a series of related table entries for quick
 extraction of the necessary events used in spectra construction.
 
 """
-from traits.api import HasTraits, Instance, File, List, Dict, Button
+import textwrap
+
+from traits.api import HasTraits, Instance, File, List, Dict, Str, Button
 from traitsui.api import (FileEditor, Group, HSplit, Item,
                           ListStrEditor, TextEditor, VGroup, View)
 
@@ -22,18 +24,37 @@ class SeriesView(HasTraits):
 
 class StatsView(HasTraits):
     ifm_file_series = List()
-    stats_editor = TextEditor(multi_line=True)
+    stats_editor = TextEditor()
     stats = Dict()
 
-    view = View(Item('stats',
-                     editor=stats_editor, style='readonly'))
+    disp_str = Str()
 
-    # ADD METHODS FOR DISPLAYING THE FULL TEXT OF THE MESSAGE
+    view = View(Item('disp_str',
+                     editor=stats_editor, style='readonly', show_label=False))
+
+    def _disp_str_default(self):
+        disp_str = "No series currently selected"
+        return disp_str
+
+    def _stats_changed(self):
+        disp_str = textwrap.dedent("""\
+            SERIES INFORMATION
+
+            Series was started: {start}
+
+            Total run time: {total}
+
+            Live time for each detector:
+            DET0         DET1        DET2
+            {live[0]}    {live[1]}   {live[2]}
+            """)
+
+        self.disp_str = disp_str.format(**self.stats)
 
 class PyramdsView(HasTraits):
-    parser = Instance(PyramdsParser)
-    series_view = Instance(SeriesView)
-    stats_view = Instance(StatsView)
+    parser = Instance(PyramdsParser, ())
+    series_view = Instance(SeriesView, ())
+    stats_view = Instance(StatsView, ())
 
     bin_file_editor = FileEditor(filter=['*.bin'])
     hdf_file_editor = FileEditor(filter=['*.h5'])
@@ -49,7 +70,7 @@ class PyramdsView(HasTraits):
                         label='BIN File'),
                    HSplit(Item('series_view', style='custom',
                                show_label=False),
-                          Item('stats', style='custom', show_label=False),
+                          Item('stats_view', style='custom', show_label=False),
                           springy=True),
                    show_border=True),
             VGroup(Item('parse_button', show_label=False)),
@@ -71,9 +92,6 @@ class PyramdsView(HasTraits):
         self.stats_view.stats = self.parser.get_bin_info()
 
 if __name__ == '__main__':
-    pp = PyramdsParser()
-    serv = SeriesView()
-    stav = StatsView()
 
-    pv = PyramdsView(parser=pp, series_view=serv, stats_view=stav)
+    pv = PyramdsView()
     pv.configure_traits()
