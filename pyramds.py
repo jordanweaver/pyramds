@@ -1,19 +1,19 @@
-"""
-PYRAMDS (Python for Radioisotope Analysis & Multidetector Suppression)
+# PYRAMDS (Python for Radioisotope Analysis & Multidetector Suppression)
+#
+# Data parser for PIXIE List Mode binary data *.bin
+# The data contained in the .bin file is reformatted into an HDF5 file
+# that stores event information is a series of related table entries for quick
+# extraction of the necessary events used in spectra construction.
+#
+# Author: Jordan Weaver
 
-Data parser for PIXIE List Mode binary data *.bin
-The data contained in the .bin file is reformatted into an HDF5 file
-that stores event information is a series of related table entries for quick
-extraction of the necessary events used in spectra construction.
-
-"""
 import textwrap
 
 from traits.api import HasTraits, Instance, File, List, Dict, Str, Button
 from traitsui.api import (FileEditor, Group, HSplit, Item,
                           ListStrEditor, TextEditor, VGroup, View)
 
-from pyramds_model import PyramdsParser
+from parser_model import PyramdsParser
 
 class SeriesView(HasTraits):
     bin_file_series = List(label="Files", desc="Select file from series")
