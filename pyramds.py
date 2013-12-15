@@ -13,7 +13,7 @@ from traits.api import HasTraits, Instance, File, List, Dict, Str, Button
 from traitsui.api import (FileEditor, Group, HSplit, Item,
                           ListStrEditor, TextEditor, VGroup, View)
 
-from parser_model import PyramdsParser
+from parser_model import PyramdsParser, SpectrumExporter
 
 class SeriesView(HasTraits):
     bin_file_series = List(label="Files", desc="Select file from series")
@@ -86,10 +86,13 @@ class PyramdsView(HasTraits):
     # On filename change, update parser model and pull new .ifm stats
     def _bin_filename_changed(self, new):
 
-        self.parser.selected_data_file = new
+        self.parser.data_file = new
         self.series_view.bin_file_series = self.parser.get_file_series('bin')
 
         self.stats_view.stats = self.parser.get_bin_info()
+
+    def _parse_button_fired(self):
+        self.parser.start_parse()
 
 if __name__ == '__main__':
 

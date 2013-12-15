@@ -2,6 +2,9 @@
 #
 # Author: Jordan Weaver
 
+import struct
+import os
+
 from tables import Float32Col, Int32Col, IsDescription
 
 # Internal Imports
@@ -33,4 +36,113 @@ class AggEvent2(IsDescription):
     timestamp = Float32Col(pos=2)
 
 class PyramdsParser(PyramdsBase):
+
+    def start_parse(self):
+
+        self.create_h5()
+        self.record_time_stats()
+
+        # This table is where the data will be placed after unpacking it
+        # from binary
+        table = self.h5file.createTable(self.h5_group, 'readout',
+                                        GammaEvent, "Data readout")
+
+        # Only start the buffer count before the entire run, not each file
+        buffer_no = 0
+
+        for data_file in self.bin_file_series:
+
+            data_path = os.path.join(self.data_cwd, data_file)
+
+            file_pos = 0
+
+            with open(data_path, 'rb') as fin:
+                print('Working on ' + data_file)
+
+                # Pointer object to place values on in the row for
+                # each event. Must create new instance each time .flush
+                # is called (every .bin file)
+                event = table.row
+
+                word = fin.read(2)
+
+                while word:
+
+                    # Determine the length of the buffer to be used in
+                    # recognizing new buffer
+                    buf_ndata = struct.unpack('<H', word)[0]
+                    fin.seek(-2, 1)
+
+                    # Increase limits of the file pointer
+                    file_pos += (buf_ndata * 2)
+
+                    # Read in buffer header data
+                    head = fin.read(self.bufheadlen * 2)
+                    head_fmt = '<' + str(self.bufheadlen) + 'H'
+
+                    (buf_ndata, buf_modnum,
+                     buf_format, buf_timehi,
+                     buf_timemi, buf_timelo) = struct.unpack(head_fmt, head)
+
+                    # Remember the time of the first buffer of entire run.
+                    # Use this for comparing time stops.
+                    if buffer_no == 0:
+                        t_start_hi = buf_timehi * 64000 * 64000
+                        t_start_mi = buf_timemi * 64000
+                        t_start_lo = buf_timelo
+                        t_start = (t_start_hi + t_start_mi + t_start_lo) * \
+                                   self.tunits * 1e-9 # in seconds
+
+                    while fin.tell() < file_pos:
+                        # Read in event header data
+                        header = fin.read(eventheadlen * 2)
+                        evt_pattern, evt_timehi, evt_timelo = \
+                                        struct.unpack('<' + str(eventheadlen) + 'H', header)
+
+                        read_pattern = list(map(int, bin(evt_pattern)[-4:]))
+                        read_pattern.reverse()
+                        hit_pattern = ''.join(map(str, read_pattern))
+
+                        #ftest.write('{0:s} '.format(hit_pattern))
+
+                        trigger_vals = [float('nan')]*3
+                        for channel in range(3):
+                            if read_pattern[channel] == 1:
+                                words = fin.read(2 * 2)
+                                chan_trigtime, energy = \
+                                            struct.unpack('<' + str(chanheadlen) + 'H', words)
+                                #ftest.write('{0:8d} {1:6d} '.format(chan_trigtime, energy))
+                                trigger_vals[channel] = (float((evt_timehi * 64000 + chan_trigtime) * tunits))
+
+                                # Store the data read in from the binary file into the
+                                # HDF5 table.
+                                if ((energy > energy_max) & (channel > 0)):
+                                    event['energy_' + str(channel)] = -1
+                                else: event['energy_' + str(channel)] = energy
+                            elif read_pattern[channel] == 0:
+                                event['energy_' + str(channel)] = -1
+
+                        #ftest.write('\n')
+
+                        event['deltaT_01'] = abs(trigger_vals[0] - trigger_vals[1])
+                        event['deltaT_02'] = abs(trigger_vals[0] - trigger_vals[2])
+                        event['deltaT_12'] = abs(trigger_vals[1] - trigger_vals[2])
+
+                        event['timestamp'] = (buf_timehi * 64000 * 64000 + evt_timehi * 64000 + evt_timelo) * tunits * 1e-9
+
+                        event.append()
+                        table.flush()
+
+                    # Read word, buf_ndata, to continue loop or break
+                    word = fin.read(2)
+
+                    buffer_no += 1
+                    if buffer_no%100 == 0:
+                        print('Buffer No. %d' % buffer_no)
+
+                    # Flush data to the HFD5 table and start new buffer
+                    table.flush()
+
+            file_counter += 1
+            file_path = (file_series + '%04d') % file_counter
 
