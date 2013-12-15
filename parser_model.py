@@ -146,3 +146,5 @@ class PyramdsParser(PyramdsBase):
             file_counter += 1
             file_path = (file_series + '%04d') % file_counter
 
+class SpectrumExporter(PyramdsParser):
+    pass
