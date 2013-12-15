@@ -45,8 +45,8 @@ class PyramdsParser(PyramdsBase):
 
         # This table is where the data will be placed after unpacking it
         # from binary
-        table = self.h5file.createTable(self.h5_group, 'readout',
-                                        GammaEvent, "Data readout")
+        self.table = self.h5file.createTable(self.h5_group, 'readout',
+                                             GammaEvent, "Data readout")
 
         # Only start the buffer count before the entire run, not each file
         buffer_no = 0
@@ -63,7 +63,7 @@ class PyramdsParser(PyramdsBase):
                 # Pointer object to place values on in the row for
                 # each event. Must create new instance each time .flush
                 # is called (every .bin file)
-                event = table.row
+                event = self.table.row
 
                 word = fin.read(2)
 
@@ -143,7 +143,7 @@ class PyramdsParser(PyramdsBase):
                                               evt_timelo) * self.tunits * 1e-9
 
                         event.append()
-                        table.flush()
+                        self.table.flush()
 
                     # Read word, buf_ndata, to continue loop or break
                     word = fin.read(2)
@@ -153,13 +153,66 @@ class PyramdsParser(PyramdsBase):
                         print('Buffer No. %d' % buffer_no)
 
                     # Flush data to the HFD5 table and start new buffer
-                    table.flush()
+                    self.table.flush()
 
         # in seconds
         self.t_final = (buf_timehi * 64000 * 64000 +
                         evt_timehi * 64000 + evt_timelo) * self.tunits * 1e-9
         self.t_duration = self.t_final - self.t_start
         self.t_array_dim = int(np.ceil(self.t_duration / self.t_steps))
+
+    def store_spectra_h5(self):
+
+        ######################################################################
+        # Store Det-1 & 2 arrays containing normal counts ####################
+        ######################################################################
+
+        print('Started creating normal data aggregates...')
+        norm12table = self.h5file.createTable(self.h5_gNormal, 'norm_evts12',
+                                              AggEvent2,
+                                              "Normal Time-Stamped Data")
+        norm_event = norm12table.row
+
+        for row in self.table.where("""(energy_1 != -1) | (energy_2 != -1)"""):
+            norm_event['energy_1'] = row['energy_1']
+            norm_event['energy_2'] = row['energy_2']
+            norm_event['timestamp'] = row['timestamp']
+            norm_event.append()
+            norm12table.flush()
+
+        # Det 1
+        dt_temp = np.zeros(self.energy_max + 1, dtype=np.int32)
+        dt_array = np.zeros((self.t_array_dim + 1, self.energy_max + 1),
+                            dtype=np.int32)
+        ti = 0
+        for row in norm12table:
+            if (row['timestamp'] - self.t_start) >= (ti + 1) * self.t_steps:
+                ti += 1
+                dt_array[ti] = dt_temp.copy()
+            if row['energy_1'] >= 0:
+                dt_temp[row['energy_1']] += 1
+        dt_array[-1] = dt_temp.copy()
+
+        self.h5file.createArray(self.h5_gNormal, 'norm1_spec',
+                                dt_array,
+                                "Normal Time-Chunked Spec Array - Det 1")
+
+        # Det 2
+        dt_temp = np.zeros(self.energy_max + 1, dtype=np.int32)
+        dt_array = np.zeros((self.t_array_dim + 1, self.energy_max + 1),
+                            dtype=np.int32)
+        ti = 0
+        for row in norm12table:
+            if (row['timestamp'] - self.t_start) >= (ti + 1) * self.t_steps:
+                ti += 1
+                dt_array[ti] = dt_temp.copy()
+            if row['energy_2'] >= 0:
+                dt_temp[row['energy_2']] += 1
+        dt_array[-1] = dt_temp.copy()
+
+        self.h5file.createArray(self.h5_gNormal, 'norm2_spec',
+                                dt_array,
+                                "Normal Time-Chunked Spec Array - Det 2")
 
 class SpectrumExporter(PyramdsParser):
     pass
