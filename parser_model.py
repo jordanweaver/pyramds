@@ -170,7 +170,7 @@ class PyramdsParser(PyramdsBase):
         print('Started creating normal data aggregates...')
         norm12table = self.h5file.createTable(self.h5_gNormal, 'norm_evts12',
                                               AggEvent2,
-                                              "Normal Time-Stamped Data")
+                                              "Normal Log Data")
         norm_event = norm12table.row
 
         for row in self.table.where("""(energy_1 != -1) | (energy_2 != -1)"""):
@@ -213,6 +213,70 @@ class PyramdsParser(PyramdsBase):
         self.h5file.createArray(self.h5_gNormal, 'norm2_spec',
                                 dt_array,
                                 "Normal Time-Chunked Spec Array - Det 2")
+
+        ######################################################################
+        # Store Det-1 & 2 arrays containing Compton counts ###################
+        ######################################################################
+
+        print('Started creating anti-coincidence data aggregates...')
+
+        compt1table = self.h5file.createTable(self.h5_gCompton, 'compt_evts1',
+                                              AggEvent1,
+                                              "Compton Log Data - Det 1")
+        compt_event = compt1table.row
+
+        query = "(energy_0 == -1) & (energy_1 != -1) & (energy_2 == -1)"
+        for row in self.table.where(query):
+            compt_event['energy'] = row['energy_1']
+            compt_event['timestamp'] = row['timestamp']
+            compt_event.append()
+            compt1table.flush()
+
+        compt2table = self.h5file.createTable(self.h5_gCompton, 'compt_evts2',
+                                              AggEvent1,
+                                              "Compton Log Data - Det 2")
+        compt_event = compt2table.row
+
+        query = "(energy_0 == -1) & (energy_1 == -1) & (energy_2 != -1)"
+        for row in self.table.where(query):
+            compt_event['energy'] = row['energy_2']
+            compt_event['timestamp'] = row['timestamp']
+            compt_event.append()
+            compt2table.flush()
+
+        # Det 1
+        dt_temp = np.zeros(self.energy_max + 1, dtype=np.int32)
+        dt_array = np.zeros((self.t_array_dim + 1, self.energy_max + 1),
+                            dtype=np.int32)
+
+        ti = 0
+        for row in compt1table:
+            if (row['timestamp'] - self.t_start) >= (ti + 1) * self.t_steps:
+                ti += 1
+                dt_array[ti] = dt_temp.copy()
+            if row['energy'] >= 0:
+                dt_temp[row['energy']] += 1
+        dt_array[-1] = dt_temp.copy()
+
+        self.h5file.createArray(self.h5_gCompton, 'compt1_spec', dt_array,
+                                "Compton-Supp Time-Chunked Spec Array - Det 1")
+
+        # Det 2
+        dt_temp = np.zeros(self.energy_max + 1, dtype=np.int32)
+        dt_array = np.zeros((self.t_array_dim + 1, self.energy_max + 1),
+                            dtype=np.int32)
+
+        ti = 0
+        for row in compt2table:
+            if (row['timestamp'] - self.t_start) >= (ti + 1) * self.t_steps:
+                ti += 1
+                dt_array[ti] = dt_temp.copy()
+            if row['energy'] >= 0:
+                dt_temp[row['energy']] += 1
+        dt_array[-1] = dt_temp.copy()
+
+        self.h5file.createArray(self.h5_gCompton, 'compt2_spec', dt_array,
+                                "Compton-Supp Time-Chunked Spec Array - Det 2")
 
 class SpectrumExporter(PyramdsParser):
     pass
