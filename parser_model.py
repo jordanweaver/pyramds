@@ -164,10 +164,11 @@ class PyramdsParser(PyramdsBase):
     def store_spectra_h5(self):
 
         ######################################################################
-        # Store Det-1 & 2 arrays containing normal counts ####################
+        # Store Det-1 & 2 arrays containing Normal counts ####################
         ######################################################################
 
         print('Started creating normal data aggregates...')
+
         norm12table = self.h5file.createTable(self.h5_gNormal, 'norm_evts12',
                                               AggEvent2,
                                               "Normal Log Data")
@@ -277,6 +278,111 @@ class PyramdsParser(PyramdsBase):
 
         self.h5file.createArray(self.h5_gCompton, 'compt2_spec', dt_array,
                                 "Compton-Supp Time-Chunked Spec Array - Det 2")
+
+        ######################################################################
+        # Store Det-1 & 2 arrays containing Gamma-Gamma counts ###############
+        ######################################################################
+
+        print('Started creating coincidence data aggregates...')
+
+        gg1table = self.h5file.createTable(self.h5_gGGcoinc, 'gg_evts1',
+                                           AggEvent1, "G-G Log Data - Det 1")
+        gg_event = gg1table.row
+
+        # Det 1
+        teststr1 = ("((energy_0 == -1) & "
+                    "(energy_1 != -1) & "
+                    "(energy_2 != -1) & "
+                    "(deltaT_12 < {0}))")
+
+        teststr2 = ("((energy_0 != -1) & "
+                    "(energy_1 != -1) & "
+                    "(energy_2 == -1) & "
+                    "(deltaT_01 < {0}))")
+
+        teststr3 = ("((energy_0 != -1) & "
+                    "(energy_1 != -1) & "
+                    "(energy_2 != -1) & "
+                    "(deltaT_01 < {0}))")
+
+        teststr4 = ("((energy_0 != -1) & "
+                    "(energy_1 != -1) & "
+                    "(energy_2 != -1) & "
+                    "(deltaT_12 < {0}))")
+
+        teststr = ' | '.join([teststr1, teststr2, teststr3, teststr4])
+        query = teststr.format(self.short_window)
+
+        for row in self.table.where(query):
+            gg_event['energy'] = row['energy_1']
+            gg_event['timestamp'] = row['timestamp']
+            gg_event.append()
+            gg1table.flush()
+
+        dt_temp = np.zeros(self.energy_max + 1, dtype=np.int32)
+        dt_array = np.zeros((self.t_array_dim + 1, self.energy_max + 1),
+                            dtype=np.int32)
+
+        ti = 0
+        for row in gg1table:
+            if (row['timestamp'] - self.t_start) >= (ti + 1) * self.t_steps:
+                ti += 1
+                dt_array[ti] = dt_temp.copy()
+            if row['energy'] >= 0:
+                dt_temp[row['energy']] += 1
+        dt_array[-1] = dt_temp.copy()
+
+        self.h5file.createArray(self.h5_gGGcoinc, 'gg1_spec', dt_array,
+                                "G-G Time-Chunked Spec Array - Det 1")
+
+        # Det 2
+        gg2table = self.h5file.createTable(self.h5_gGGcoinc, 'gg_evts2',
+                                           AggEvent1, "G-G Log Data - Det 2")
+        gg_event = gg2table.row
+
+        teststr1 = ("((energy_0 == -1) & "
+                    "(energy_1 != -1) & "
+                    "(energy_2 != -1) & "
+                    "(deltaT_12 < {0}))")
+
+        teststr2 = ("((energy_0 != -1) & "
+                    "(energy_1 == -1) & "
+                    "(energy_2 != -1) & "
+                    "(deltaT_02 < {0}))")
+
+        teststr3 = ("((energy_0 != -1) & "
+                    "(energy_1 != -1) & "
+                    "(energy_2 != -1) & "
+                    "(deltaT_02 < {0}))")
+
+        teststr4 = ("((energy_0 != -1) & "
+                    "(energy_1 != -1) & "
+                    "(energy_2 != -1) & "
+                    "(deltaT_12 < {0}))")
+
+        teststr = ' | '.join([teststr1, teststr2, teststr3, teststr4])
+        query = teststr.format(self.short_window)
+
+        for row in self.table.where(query):
+            gg_event['energy'] = row['energy_2']
+            gg_event['timestamp'] = row['timestamp']
+            gg_event.append()
+            gg2table.flush()
+
+        dt_temp = np.zeros(self.energy_max + 1, dtype=np.int32)
+        dt_array = np.zeros((self.t_array_dim + 1, self.energy_max + 1),
+                            dtype=np.int32)
+        ti = 0
+        for row in gg2table:
+            if (row['timestamp'] - self.t_start) >= (ti + 1) * self.t_steps:
+                ti += 1
+                dt_array[ti] = dt_temp.copy()
+            if row['energy'] >= 0:
+                dt_temp[row['energy']] += 1
+        dt_array[-1] = dt_temp.copy()
+
+        self.h5file.createArray(self.h5_gGGcoinc, 'gg2_spec', dt_array,
+                                "G-G Time-Chunked Spec Array - Det 2")
 
 class SpectrumExporter(PyramdsParser):
     pass
