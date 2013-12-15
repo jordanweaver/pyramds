@@ -11,11 +11,11 @@ from os.path import dirname, join
 # External Imports
 import numpy as np
 from tables import openFile
-from traits.api import Dict, File, HasTraits, Int, Property
+from traits.api import Dict, File, HasTraits, Float, Int, Property
 
 class PyramdsBase(HasTraits):
 
-    selected_data_file = File()
+    data_file = File()
     data_cwd = Property
 
     # File series base name (series number and extension removed)
@@ -27,6 +27,16 @@ class PyramdsBase(HasTraits):
 
     # Only initialize buffer counter before the entire run
     buffer_no = 0
+
+    ############### Detector System Variables ##############
+    # Maximum number of bins (energies) to be stored for detectors
+    energy_max = Int(8192)
+
+    # Minium time resolution unit (13.3333...) nanoseconds (for PIXIE timing)
+    tunits = Float(1000.0 / 75.0)
+
+    # Timing window for gamma-gamma condition (nanoseconds)
+    short_window = Float(90.0)
 
     def get_file_series(self, ext):
 
@@ -121,7 +131,7 @@ class PyramdsBase(HasTraits):
         startt = self.stats['start'].timetuple()
 
         self.h5file.createArray(
-            self.h5file.root.stats, 'start', [x for x in startt][:-3],
+            self.h5file.root.stats, 'start', [t for t in startt][:-3],
             "Start time list of run")
 
         self.h5file.createArray(
@@ -131,7 +141,7 @@ class PyramdsBase(HasTraits):
         return dirname(self.series_basename)
 
     def _get_series_basename(self):
-        return self.selected_data_file[:-8]
+        return self.data_file[:-8]
 
     def _get_active_file_path(self):
         active_file_path = \
