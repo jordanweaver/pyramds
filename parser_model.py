@@ -4,6 +4,7 @@
 
 import struct
 import os
+import numpy as np
 
 from tables import Float32Col, Int32Col, IsDescription
 
@@ -90,45 +91,56 @@ class PyramdsParser(PyramdsBase):
                         t_start_hi = buf_timehi * 64000 * 64000
                         t_start_mi = buf_timemi * 64000
                         t_start_lo = buf_timelo
-                        t_start = (t_start_hi + t_start_mi + t_start_lo) * \
-                                   self.tunits * 1e-9 # in seconds
+                        self.t_start = \
+                            (t_start_hi + t_start_mi + t_start_lo) * \
+                            self.tunits * 1e-9  # in seconds
 
                     while fin.tell() < file_pos:
                         # Read in event header data
-                        header = fin.read(eventheadlen * 2)
-                        evt_pattern, evt_timehi, evt_timelo = \
-                                        struct.unpack('<' + str(eventheadlen) + 'H', header)
+                        head = fin.read(self.eventheadlen * 2)
+                        head_fmt = '<' + str(self.eventheadlen) + 'H'
+
+                        (evt_pattern,
+                         evt_timehi,
+                         evt_timelo) = struct.unpack(head_fmt, head)
 
                         read_pattern = list(map(int, bin(evt_pattern)[-4:]))
                         read_pattern.reverse()
-                        hit_pattern = ''.join(map(str, read_pattern))
 
-                        #ftest.write('{0:s} '.format(hit_pattern))
-
-                        trigger_vals = [float('nan')]*3
-                        for channel in range(3):
-                            if read_pattern[channel] == 1:
+                        trigger_vals = [float('nan')] * 3
+                        for chan in range(3):
+                            if read_pattern[chan] == 1:
                                 words = fin.read(2 * 2)
-                                chan_trigtime, energy = \
-                                            struct.unpack('<' + str(chanheadlen) + 'H', words)
-                                #ftest.write('{0:8d} {1:6d} '.format(chan_trigtime, energy))
-                                trigger_vals[channel] = (float((evt_timehi * 64000 + chan_trigtime) * tunits))
 
-                                # Store the data read in from the binary file into the
-                                # HDF5 table.
-                                if ((energy > energy_max) & (channel > 0)):
-                                    event['energy_' + str(channel)] = -1
-                                else: event['energy_' + str(channel)] = energy
-                            elif read_pattern[channel] == 0:
-                                event['energy_' + str(channel)] = -1
+                                head_fmt = '<' + str(self.chanheadlen) + 'H'
+                                chan_trigtime, energy = struct.unpack(head_fmt,
+                                                                      words)
+
+                                trigger_vals[chan] = \
+                                    float((evt_timehi * 64000 +
+                                          chan_trigtime) * self.tunits)
+
+                                # Store the data read in from the binary file
+                                # into the HDF5 table.
+                                if ((energy > self.energy_max) & (chan > 0)):
+                                    event['energy_' + str(chan)] = -1
+                                else:
+                                    event['energy_' + str(chan)] = energy
+                            elif read_pattern[chan] == 0:
+                                event['energy_' + str(chan)] = -1
 
                         #ftest.write('\n')
 
-                        event['deltaT_01'] = abs(trigger_vals[0] - trigger_vals[1])
-                        event['deltaT_02'] = abs(trigger_vals[0] - trigger_vals[2])
-                        event['deltaT_12'] = abs(trigger_vals[1] - trigger_vals[2])
+                        event['deltaT_01'] = abs(trigger_vals[0] -
+                                                 trigger_vals[1])
+                        event['deltaT_02'] = abs(trigger_vals[0] -
+                                                 trigger_vals[2])
+                        event['deltaT_12'] = abs(trigger_vals[1] -
+                                                 trigger_vals[2])
 
-                        event['timestamp'] = (buf_timehi * 64000 * 64000 + evt_timehi * 64000 + evt_timelo) * tunits * 1e-9
+                        event['timestamp'] = (buf_timehi * 64000 * 64000 +
+                                              evt_timehi * 64000 +
+                                              evt_timelo) * self.tunits * 1e-9
 
                         event.append()
                         table.flush()
@@ -137,14 +149,17 @@ class PyramdsParser(PyramdsBase):
                     word = fin.read(2)
 
                     buffer_no += 1
-                    if buffer_no%100 == 0:
+                    if buffer_no % 100 == 0:
                         print('Buffer No. %d' % buffer_no)
 
                     # Flush data to the HFD5 table and start new buffer
                     table.flush()
 
-            file_counter += 1
-            file_path = (file_series + '%04d') % file_counter
+        # in seconds
+        self.t_final = (buf_timehi * 64000 * 64000 +
+                        evt_timehi * 64000 + evt_timelo) * self.tunits * 1e-9
+        self.t_duration = self.t_final - self.t_start
+        self.t_array_dim = int(np.ceil(self.t_duration / self.t_steps))
 
 class SpectrumExporter(PyramdsParser):
     pass
