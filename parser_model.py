@@ -51,7 +51,7 @@ class PyramdsParser(PyramdsBase):
         # Only start the buffer count before the entire run, not each file
         buffer_no = 0
 
-        for data_file in self.bin_file_series:
+        for data_file in self.get_file_series('bin'):
 
             data_path = os.path.join(self.data_cwd, data_file)
 
