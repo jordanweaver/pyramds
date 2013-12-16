@@ -38,6 +38,9 @@ class PyramdsBase(HasTraits):
     # Timing window for gamma-gamma condition (nanoseconds)
     short_window = Float(90.0)
 
+    # Timing chunks for storing spectrum states
+    t_steps = 60.0
+
     def get_file_series(self, ext):
 
         file_series = []
