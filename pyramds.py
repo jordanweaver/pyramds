@@ -19,8 +19,10 @@ class SeriesView(HasTraits):
     bin_file_series = List(label="Files", desc="Select file from series")
     series_editor = ListStrEditor(editable=False)
 
-    view = View(Item('bin_file_series',
-                     editor=series_editor, style='readonly'))
+    view = View(Group(Item('bin_file_series',
+                           editor=series_editor, style='readonly',
+                           show_label=False),
+                show_border=True, label="DATA SERIES"))
 
 class StatsView(HasTraits):
     ifm_file_series = List()
@@ -29,8 +31,10 @@ class StatsView(HasTraits):
 
     disp_str = Str()
 
-    view = View(Item('disp_str',
-                     editor=stats_editor, style='readonly', show_label=False))
+    view = View(Group(Item('disp_str',
+                           editor=stats_editor, style='readonly',
+                           show_label=False),
+                show_border=True, label="SERIES INFORMATION"))
 
     def _disp_str_default(self):
         disp_str = "No series currently selected"
@@ -38,7 +42,6 @@ class StatsView(HasTraits):
 
     def _stats_changed(self):
         disp_str = textwrap.dedent("""\
-            SERIES INFORMATION
 
             Series was started: {start}
 
@@ -93,6 +96,7 @@ class PyramdsView(HasTraits):
 
     def _parse_button_fired(self):
         self.parser.start_parse()
+        self.parser.store_spectra_h5()
 
 if __name__ == '__main__':
 
