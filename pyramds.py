@@ -95,6 +95,11 @@ class PyramdsView(HasTraits):
         self.stats_view.stats = self.parser.get_bin_info()
 
     def _parse_button_fired(self):
+        # Check if old HDF5 file is still around
+        if self.parser.h5file != None:
+            self.parser.h5file.close()
+
+        # Open new HDF5 file, parse data, store spectra structurs, and close
         self.parser.start_parse()
         self.parser.store_spectra_h5()
 
@@ -102,3 +107,7 @@ if __name__ == '__main__':
 
     pv = PyramdsView()
     pv.configure_traits()
+
+    # Close the HDF5 file that is still open
+    if pv.parser.h5file != None:
+        pv.parser.h5file.close()
