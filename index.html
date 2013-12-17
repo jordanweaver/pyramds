@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Pyramds by papertapes</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Pyramds</h1>
+        <p></p>
+
+        <p class="view"><a href="https://github.com/papertapes/PYRAMDS">View the Project on GitHub <small>papertapes/PYRAMDS</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/papertapes/PYRAMDS/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/papertapes/PYRAMDS/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/papertapes/PYRAMDS">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <p>PYRAMDS (Python for Radioisotope Analysis &amp; Multi-Detector Suppression) is at most a data parser for PIXIE Gamma Detector List Mode binary data. The data contained in PIXIE's .bin files can be reformatted into an HDF5 file. This file stores event information in a series of related table entries for quick extraction of the necessary events to be used in spectra construction.</p>
+
+<p>Focus is placed on the ability to post-process gamma detector data for producing various flavors of spectra, such as Compton suppressed or Gamma-Gamma coincidence.</p>
+
+<p>This is most definitely a work in progress. And by "this" I mean both the code and my ability to write it.</p>
+
+<hr><h2>
+<a name="requirements" class="anchor" href="#requirements"><span class="octicon octicon-link"></span></a>Requirements</h2>
+
+<p>Regarding older versions of the following packages, I have not investigated how "required" the versions I've listed are. Instead, think of these as the tools I used to build it at the time. I used the <a href="https://www.enthought.com/products/canopy/">Enthought Canopy distribution</a>.</p>
+
+<ul>
+<li>Python 2.7</li>
+<li>Numpy</li>
+<li>PyTables</li>
+<li>Traits</li>
+<li>TraitsUI</li>
+</ul><h2>
+<a name="installation--usage" class="anchor" href="#installation--usage"><span class="octicon octicon-link"></span></a>Installation &amp; Usage</h2>
+
+<p>After installing dependencies, clone the repo and run: <code>python pyramds.py</code></p>
+
+<p>/Include screenshot of GUI</p>
+
+<h2>
+<a name="configuration-for-detector-systems" class="anchor" href="#configuration-for-detector-systems"><span class="octicon octicon-link"></span></a>Configuration for Detector Systems</h2>
+
+<p>The application still requires a significant amount of configuration on the part of the researcher. This configuration has mostly to do with collecting the necessary calibration/resolution spectra to characterize the detector performance, and then saving these parameters in the PYRAMDS application for use in the spectrum exporter.</p>
+
+<h2>
+<a name="known-limitationsbugs" class="anchor" href="#known-limitationsbugs"><span class="octicon octicon-link"></span></a>Known Limitations/Bugs</h2>
+
+<p>The application still lacks most (or any) types of exception handling and is probably still rather fragile in how one operates the parser. I have not tested the limits of this and still recommend following a fairly routine recipe/workflow when operating the GUI parser.</p>
+
+<h2>
+<a name="credits--acknowledgements" class="anchor" href="#credits--acknowledgements"><span class="octicon octicon-link"></span></a>Credits &amp; Acknowledgements</h2>
+
+<p>The author would like to thank Anthony Scopatz for his initial push many years ago for using Python to do my doctoral research, of which the legacy branch is the majority of that work. His help with quickly hacking out the first GUI, Pyraviz, over the course of a few days has helped immensely in having a working example to learn Traits/TraitsUI in the context of this work.</p>
+
+<p>Second, thanks also goes to Jonathan March for his discussions, guidance, and motivation for trying out new things and using the right tool for the job, even if I felt it was overkill, this has been very educational.</p>
+
+<p>CONTACT INFORMATION FOR QUESTIONS, BUGS REPORTS</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/papertapes">papertapes</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
