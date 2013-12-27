@@ -13,6 +13,9 @@ import numpy as np
 from tables import openFile
 from traits.api import Dict, File, HasTraits, Float, Int, Property
 
+# Internal Imports
+from detector_config import enerfit, fwhmfit, mca_cal, shape_cal
+
 class PyramdsBase(HasTraits):
 
     data_file = File()
@@ -40,6 +43,12 @@ class PyramdsBase(HasTraits):
 
     # Timing chunks for storing spectrum states
     t_steps = 60.0
+
+    # Dictionaries from detector_config.py, stored as default parameters
+    enerfit = Dict(enerfit)
+    fwhmfit = Dict(fwhmfit)
+    mca_cal = Dict(mca_cal)
+    shape_cal = Dict(shape_cal)
 
     def get_file_series(self, ext):
 
