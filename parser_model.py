@@ -5,8 +5,12 @@
 import struct
 import os
 import numpy as np
+import textwrap
+
+from datetime import datetime
 
 from tables import Float32Col, Int32Col, IsDescription
+import tables as tb
 
 # Internal Imports
 from parser_setup import PyramdsBase
@@ -384,5 +388,69 @@ class PyramdsParser(PyramdsBase):
         self.h5file.createArray(self.h5_gGGcoinc, 'gg2_spec', dt_array,
                                 "G-G Time-Chunked Spec Array - Det 2")
 
-class SpectrumExporter(PyramdsParser):
-    pass
+class SpectrumExporter(PyramdsBase):
+
+    def write_spec(self):
+        f = tb.openFile(self.data_file, 'r')
+        spectra = f.root.spectra
+
+        stl = f.root.stats.start.read()
+        startt = datetime(*stl)
+        times = {
+            'live': f.root.stats.live.read(),
+            'start': startt,
+            'total': f.root.stats.total.read()
+        }
+
+        for spec_type in spectra:
+            for group in [x for x in spec_type if (x.name[-4:] == 'spec')]:
+                title_list = group.title.split()
+                spec_type = title_list[0]
+                det_no = title_list[-1]
+
+                grp_lbl = spec_type + '-Det' + det_no
+                file_id = (self.series_basename, grp_lbl)
+
+                file_title = '{}-{}_PYRAMDS.Spe'
+                file_title = file_title.format(file_id)
+                file_string = os.path.join(self.data_cwd, file_title)
+
+                spec_markers = group[-1]
+
+                with open(file_string, 'w') as specout:
+                    field_width = 8
+
+                    # see: "ORTEC-Sofware-File-Structure-Manual.pdf" for info
+                    spec_id = 'PYRAMDS {} {}'.format(file_id)
+
+                    spec_rem = textwrap.dedent("""\
+                            DET# {}
+                            DETDESC# PYRAMDS
+                            AP# Maestro Version 6.04
+                            """)
+                    spec_rem = spec_rem.format(det_no)
+
+                    spe_date = times['start'].strftime("%m/%d/%Y %H:%M:%S")
+
+                    # PICK UP HERE!!!!
+                    spe_meas = str(int(float(times['live'][int(det_no)]))) + ' ' + str(int(float(times['total'])))
+
+                    specout.write('$SPEC_ID:\r\n' + spec_id + '\r\n$SPEC_REM:\r\n' + spec_rem +
+                                  '\r\n$DATE_MEA:\r\n' + spe_date + '\r\n$MEAS_TIM:\r\n' + spe_meas +
+                                  '\r\n$DATA:\r\n0 ' + '8191' + '\r\n')
+
+                    # Begin writing out the values for each channel in this user-defined
+                    # set of markers.
+                    for en in range(8192):
+                        str_number = str(spec_markers[en])
+                        specout.write('%s\r\n' % (str_number.rjust(field_width)))
+
+                    roi_mark_list = []
+
+                    specout.write('$ROI:\r\n' + str(len(roi_mark_list)) +
+                                  '\r\n$PRESETS:\r\nNone\r\n0\r\n0\r\n$ENER_FIT:\r\n' + enerfit[det_no] +
+                                  '\r\n$MCA_CAL:\r\n' + mca_cal[det_no] +
+                                  '\r\n$SHAPE_CAL:\r\n' + shape_cal[det_no] + '\r\n')
+
+        f.close()
+
