@@ -432,7 +432,6 @@ class SpectrumExporter(PyramdsBase):
 
                     spe_date = times['start'].strftime("%m/%d/%Y %H:%M:%S")
 
-                    # PICK UP HERE!!!!
                     spe_meas = str(int(float(times['live'][int(det_no)]))) + ' ' + str(int(float(times['total'])))
 
                     specout.write('$SPEC_ID:\r\n' + spec_id + '\r\n$SPEC_REM:\r\n' + spec_rem +
@@ -448,9 +447,9 @@ class SpectrumExporter(PyramdsBase):
                     roi_mark_list = []
 
                     specout.write('$ROI:\r\n' + str(len(roi_mark_list)) +
-                                  '\r\n$PRESETS:\r\nNone\r\n0\r\n0\r\n$ENER_FIT:\r\n' + enerfit[det_no] +
-                                  '\r\n$MCA_CAL:\r\n' + mca_cal[det_no] +
-                                  '\r\n$SHAPE_CAL:\r\n' + shape_cal[det_no] + '\r\n')
+                                  '\r\n$PRESETS:\r\nNone\r\n0\r\n0\r\n$ENER_FIT:\r\n' + self.enerfit[det_no] +
+                                  '\r\n$MCA_CAL:\r\n' + self.mca_cal[det_no] +
+                                  '\r\n$SHAPE_CAL:\r\n' + self.shape_cal[det_no] + '\r\n')
 
         f.close()
 
