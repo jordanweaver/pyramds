@@ -56,7 +56,7 @@ class StatsView(HasTraits):
 
 class PyramdsView(HasTraits):
     parser = Instance(PyramdsParser, ())
-    exporter = Instance(SpectrumExporter, ())
+    # exporter = Instance(SpectrumExporter, ())
     series_view = Instance(SeriesView, ())
     stats_view = Instance(StatsView, ())
 
@@ -97,7 +97,7 @@ class PyramdsView(HasTraits):
 
     def _parse_button_fired(self):
         # Check if old HDF5 file is still around
-        if self.parser.h5file is not None:
+        if self.parser.h5file:
             self.parser.h5file.close()
 
         # Open new HDF5 file, parse data, store spectra structurs, and close
@@ -108,7 +108,3 @@ if __name__ == '__main__':
 
     pv = PyramdsView()
     pv.configure_traits()
-
-    # Close the HDF5 file that is still open
-    if pv.parser.h5file is not None:
-        pv.parser.h5file.close()

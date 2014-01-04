@@ -11,7 +11,7 @@ from os.path import dirname, join
 # External Imports
 import numpy as np
 from tables import openFile
-from traits.api import Dict, File, HasTraits, Float, Int, Property
+from traits.api import Dict, File, HasTraits, Float, Int, Property, Any
 
 # Internal Imports
 from detector_config import enerfit, fwhmfit, mca_cal, shape_cal
@@ -27,6 +27,8 @@ class PyramdsBase(HasTraits):
     file_counter = Int(1)
     active_file_path = Property
     stats = Dict()
+
+    h5file = Any()
 
     # Only initialize buffer counter before the entire run
     buffer_no = 0
@@ -147,7 +149,7 @@ class PyramdsBase(HasTraits):
             "Start time list of run")
 
         self.h5file.createArray(
-            self.h5file.root.stats, 'total', [self.stats['total']])
+            self.h5file.root.stats, 'total', self.stats['total'])
 
     def _get_data_cwd(self):
         return dirname(self.series_basename)
