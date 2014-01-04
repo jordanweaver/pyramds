@@ -54,11 +54,16 @@ class StatsView(HasTraits):
 
         self.disp_str = disp_str.format(**self.stats)
 
+class ExporterView(HasTraits):
+
+    disp_str = Str()
+
 class PyramdsView(HasTraits):
     parser = Instance(PyramdsParser, ())
-    # exporter = Instance(SpectrumExporter, ())
+    exporter = Instance(SpectrumExporter, ())
     series_view = Instance(SeriesView, ())
     stats_view = Instance(StatsView, ())
+    exporter_view = Instance(ExporterView, ())
 
     bin_file_editor = FileEditor(filter=['*.bin'])
     hdf_file_editor = FileEditor(filter=['*.h5'])
@@ -67,6 +72,7 @@ class PyramdsView(HasTraits):
     hdf_filename = File()
 
     parse_button = Button(label="Parse Series")
+    export_button = Button(label="Export Spectra")
 
     traits_view = View(
         Group(
@@ -80,14 +86,16 @@ class PyramdsView(HasTraits):
             VGroup(Item('parse_button', show_label=False)),
             label="PIXE PARSER"),
         Group(
-            VGroup(Item('hdf_filename', editor=bin_file_editor,
+            VGroup(Item('hdf_filename', editor=hdf_file_editor,
                         label='HDF File'),
+                   Item('exporter_view', style='custom', show_label=False),
                    show_border=True,),
+            VGroup(Item('export_button', show_label=False)),
             label="SPECTRUM EXPORTER"),
         resizable=True,
         title="PYRAMDS")
 
-    # On filename change, update parser model and pull new .ifm stats
+    # On bin filename change, update parser model and pull new .ifm stats
     def _bin_filename_changed(self, new):
 
         self.parser.data_file = new
@@ -95,14 +103,28 @@ class PyramdsView(HasTraits):
 
         self.stats_view.stats = self.parser.get_bin_info()
 
+    # On hdf filename change, update exporter model and pull/display info
+    def _hdf_filename_changed(self, new):
+
+        self.exporter.data_file = self.hdf_filename
+
     def _parse_button_fired(self):
         # Check if old HDF5 file is still around
-        if self.parser.h5file:
+        if self.parser.h5file is not None:
             self.parser.h5file.close()
 
         # Open new HDF5 file, parse data, store spectra structurs, and close
         self.parser.start_parse()
         self.parser.store_spectra_h5()
+
+        self.hdf_filename = self.parser.h5_filename
+
+    def _export_button_fired(self):
+        # Check if old HDF5 file is still around
+        if self.parser.h5file is not None:
+            self.parser.h5file.close()
+
+        self.exporter.write_spec()
 
 if __name__ == '__main__':
 

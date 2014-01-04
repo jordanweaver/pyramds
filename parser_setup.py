@@ -110,10 +110,10 @@ class PyramdsBase(HasTraits):
         make up the framework of the overall file structure.
         """
 
-        h5_filename = self.series_basename + '.h5'
+        self.h5_filename = self.series_basename + '.h5'
         h5_title = 'Data - ' + self.series_basename
 
-        self.h5file = openFile(h5_filename, mode='w', title=h5_title)
+        self.h5file = openFile(self.h5_filename, mode='w', title=h5_title)
 
         self.h5_group = self.h5file.createGroup(
             self.h5file.root,

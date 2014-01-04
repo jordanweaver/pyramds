@@ -412,7 +412,7 @@ class SpectrumExporter(PyramdsBase):
                 file_id = (self.series_basename, grp_lbl)
 
                 file_title = '{}-{}_PYRAMDS.Spe'
-                file_title = file_title.format(file_id)
+                file_title = file_title.format(*file_id)
                 file_string = os.path.join(self.data_cwd, file_title)
 
                 spec_markers = group[-1]
@@ -421,7 +421,7 @@ class SpectrumExporter(PyramdsBase):
                     field_width = 8
 
                     # see: "ORTEC-Sofware-File-Structure-Manual.pdf" for info
-                    spec_id = 'PYRAMDS {} {}'.format(file_id)
+                    spec_id = 'PYRAMDS {} {}'.format(*file_id)
 
                     spec_rem = textwrap.dedent("""\
                             DET# {}
