@@ -2,15 +2,16 @@
 #
 # Author: Jordan Weaver
 
+# Standard Library Imports
 import struct
 import os
 import numpy as np
 import textwrap
-
 from datetime import datetime
 
-from tables import Float32Col, Int32Col, IsDescription
+# External Imports
 import tables as tb
+from tables import Float32Col, Int32Col, IsDescription
 
 # Internal Imports
 from parser_setup import PyramdsBase

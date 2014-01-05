@@ -7,13 +7,17 @@
 #
 # Author: Jordan Weaver
 
+# Standard Library Imports
 import textwrap
 
-from traits.api import HasTraits, Instance, File, List, Dict, Str, Button
-from traitsui.api import (FileEditor, Group, HSplit, Item,
-                          ListStrEditor, TextEditor, VGroup, View)
+# External Imports
+from traits.api import Button, Dict, File, HasTraits, Instance, List, Str
+from traitsui.api import (FileEditor, Group, HSplit, Item, ListStrEditor,
+                          TextEditor, VGroup, View)
 
+# Internal Imports
 from parser_model import PyramdsParser, SpectrumExporter
+
 
 class SeriesView(HasTraits):
     bin_file_series = List(label="Files", desc="Select file from series")
