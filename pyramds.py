@@ -59,8 +59,7 @@ class StatsView(HasTraits):
         self.disp_str = disp_str.format(**self.stats)
 
 class ExporterView(HasTraits):
-
-    disp_str = Str()
+    pass
 
 class PyramdsView(HasTraits):
     parser = Instance(PyramdsParser, ())
