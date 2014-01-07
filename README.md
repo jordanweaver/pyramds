@@ -1,6 +1,6 @@
 # PYRAMDS #
 
-PYRAMDS (Python for Radioisotope Analysis & Multi-Detector Suppression) is at most a data parser for PIXIE Gamma Detector List Mode binary data. The data contained in PIXIE's .bin files can be reformatted into an HDF5 file. This file stores event information in a series of related table entries for quick extraction of the necessary events to be used in spectra construction.
+PYRAMDS (Python for Radioisotope Analysis & Multi-Detector Suppression) is primarily a data parser for PIXIE Gamma Detector List Mode binary data. When run, the data contained in PIXIE's .bin files can be reformatted into an HDF5 file. This file stores event information in a series of related table entries for quick extraction of the necessary events to be used in spectra construction. Subsequently the data can be exported as spectrum files for analysis in [Ortec Maestro](http://www.ortec-online.com/Solutions/applications-software.aspx).
 
 Focus is placed on the ability to post-process gamma detector data for producing various flavors of spectra, such as Compton suppressed or Gamma-Gamma coincidence.
 
@@ -23,7 +23,7 @@ After installing dependencies, clone the repo and run: `python pyramds.py`
 /Include screenshot of GUI
 
 ## Configuration for Detector Systems ##
-The application still requires a significant amount of configuration on the part of the researcher. This configuration has mostly to do with collecting the necessary calibration/resolution spectra to characterize the detector performance, and then saving these parameters in the PYRAMDS application for use in the spectrum exporter.
+The application still requires a fair amount of configuration on the part of the researcher. This configuration has mostly to do with collecting the necessary calibration/resolution spectra to characterize the detector performance, and then saving these parameters in the PYRAMDS application for use in the spectrum exporter.
 
 ## Known Limitations/Bugs ##
 The application still lacks most (or any) types of exception handling and is probably still rather fragile in how one operates the parser. I have not tested the limits of this and still recommend following a fairly routine recipe/workflow when operating the GUI parser.
