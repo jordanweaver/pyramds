@@ -4,6 +4,3 @@
 *.png
 *.ifm
 *.bin
-
-# Data Directory #
-data/
